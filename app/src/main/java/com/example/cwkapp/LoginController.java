@@ -54,7 +54,7 @@ Button backToSignin  = findViewById(R.id.MoveToSigninBtn);
 
         FirebaseUser currentUser = authorization.getCurrentUser();
         if(currentUser !=null){
-            //redirect to the app
+            OpenDashboard();
         }
     }
 
@@ -86,5 +86,6 @@ Button backToSignin  = findViewById(R.id.MoveToSigninBtn);
     private void OpenDashboard(){
         Intent intent = new Intent(LoginController.this, Dashboard.class);
         startActivity(intent);
+        finish();
     }
 }

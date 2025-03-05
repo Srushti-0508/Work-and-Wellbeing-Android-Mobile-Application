@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="850px"
+    android:layout_margin="16dp"
+    android:background="@color/bg_frame"
+    android:layout_height="wrap_content">
+
+    <!-- <DatePicker
+        android:layout_width="wrap_content"
+        android:layout_height="130dp"
+        android:layout_marginStart="92dp"
+        android:layout_marginTop="148dp"
+        android:calendarViewShown="false"
+
+        android:datePickerMode="spinner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_frame"
+        android:backgroundTint="@color/bg_frame"
+        app:cardCornerRadius="30dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/dialogHeading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Add New Task"
+                android:textAlignment="center"
+                android:textColor="@color/heading"
+                android:textSize="20dp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/textInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:drawablePadding="8dp"
+                android:hint="Task Name"
+                android:minHeight="50dp"
+                android:padding="10dp"
+                android:textColorHint="@color/heading"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/dialogHeading" />
+
+            <TextView
+        android:id="@+id/date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:drawableLeft="@drawable/calendar"
+        android:drawablePadding="8dp"
+        android:padding="8dp"
+        android:text="Select Date"
+        android:textColor="@color/heading"
+        android:textSize="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputEditText" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/dropdown"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                app:boxBackgroundColor="@color/bg_frame"
+                app:boxStrokeColor="@color/heading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="Select Category"
+                android:textColorHint="@color/heading"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/date">
+
+                <AutoCompleteTextView
+                    android:id="@+id/autocomplete_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/saveBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:backgroundTint="@color/heading"
+                android:text="Save"
+                app:layout_constraintTop_toBottomOf="@+id/priorityBtn"
+                tools:layout_editor_absoluteX="21dp" />
+
+            <TextView
+                android:id="@+id/priorityText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Select Priority Level"
+                android:textColor="@color/heading"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/dropdown" />
+
+            <!--<Button
+                android:id="@+id/highbtn"
+                android:layout_width="87dp"
+                android:layout_height="54dp"
+                android:layout_marginTop="4dp"
+                android:backgroundTint="@color/Orange"
+                android:minHeight="50dp"
+                android:text="High"
+                android:textColor="@color/heading"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/priorityText" />
+
+            <Button
+                android:id="@+id/mediumbtn"
+                android:layout_width="109dp"
+                android:layout_height="54dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="4dp"
+                android:backgroundTint="@color/Yellow"
+                android:minHeight="50dp"
+                android:text="Medium"
+                android:textColor="@color/heading"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/highbtn"
+                app:layout_constraintTop_toBottomOf="@+id/priorityText" />
+
+            <Button
+                android:id="@+id/lowbtn"
+                android:layout_width="86dp"
+                android:layout_height="53dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="32dp"
+                android:backgroundTint="@color/green"
+                android:minHeight="50dp"
+                android:text="Low"
+                android:textColor="@color/heading"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/mediumbtn"
+                app:layout_constraintTop_toBottomOf="@+id/dropdown" />-->
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/priorityBtn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/priorityText"
+
+                app:singleSelection="true">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/HighBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="High"
+                    android:textColor="@color/Orange"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:textStyle="bold"
+
+                    />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/MediumBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Medium"
+
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:textColor="@color/Yellow"
+                    android:textStyle="bold"
+                    />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/LowBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Low"
+                    android:textColor="@color/heading"
+                    android:textStyle="bold"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -55,6 +55,7 @@ private FirebaseAuth authorization;
         FirebaseUser currentUser = authorization.getCurrentUser();
         if(currentUser !=null){
             //redirect to the app
+            OpenDashboard();
         }
     }
 
@@ -68,7 +69,7 @@ private FirebaseAuth authorization;
                             FirebaseUser user = authorization.getCurrentUser();
                             Toast.makeText(MainActivity.this, "Authentication Success.", Toast.LENGTH_SHORT).show();
                             //use an Intent to move to next activity.
-
+                            OpenDashboard();
                         }
                         else{
                             Log.w("MainActivity", "createUserWithEmail:failure",task.getException());
@@ -85,7 +86,11 @@ private FirebaseAuth authorization;
         String password = Password.getText().toString();
         register(username,password);
     }
-
+    private void OpenDashboard(){
+        Intent intent = new Intent(MainActivity.this, Dashboard.class);
+        startActivity(intent);
+        finish();
+    }
 
 
 }
