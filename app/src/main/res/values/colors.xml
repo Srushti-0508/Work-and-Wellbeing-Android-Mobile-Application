@@ -12,6 +12,8 @@
     <color name="Orange">#E57373</color>
     <color name="Yellow">#FFB74D</color>
     <color name="green">#DBEAD9</color>
+    <color name="button">#008080</color>
+    <color name="paleYellow">#DBEDDC</color>
 
 
 </resources>

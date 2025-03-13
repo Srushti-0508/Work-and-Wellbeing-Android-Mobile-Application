@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    >
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_frame"
+        android:backgroundTint="@color/bg_frame"
+        app:cardCornerRadius="30dp"
+
+        app:cardElevation="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp">
+
+            <TextView
+                android:id="@+id/categoryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Category: "
+                android:textColor="@color/heading"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/checkbox"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0"
+                tools:ignore="TextSizeCheck" />
+
+            <TextView
+                android:id="@+id/CTypeTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Type"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/checkbox"
+                app:layout_constraintStart_toEndOf="@+id/categoryText"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.166" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:buttonTint="@color/heading"
+                android:text="Task 1"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/categoryText" />
+
+            <TextView
+                android:id="@+id/priorityText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="132dp"
+                android:text="Priority: "
+                android:textColor="@color/heading"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/dateText"
+                app:layout_constraintStart_toEndOf="@+id/categoryText"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.2"
+                tools:ignore="TextSizeCheck" />
+
+            <TextView
+                android:id="@+id/PLevelTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="Level"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/DateTextView"
+                app:layout_constraintStart_toEndOf="@+id/priorityText"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/dateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_marginStart="124dp"
+                android:layout_marginTop="16dp"
+                android:text="Date: "
+                android:textColor="@color/heading"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/checkbox"
+                app:layout_constraintTop_toBottomOf="@+id/PLevelTextView"
+                tools:ignore="TextSizeCheck" />
+
+            <TextView
+                android:id="@+id/DateTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="16dp"
+                android:text="08-03-2025"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/dateText"
+                app:layout_constraintTop_toBottomOf="@+id/PLevelTextView" />
+
+            <ImageView
+                android:id="@+id/moreMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_frame"
+                android:backgroundTint="@color/active_color"
+                android:src="@drawable/more_menu"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@id/PLevelTextView"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

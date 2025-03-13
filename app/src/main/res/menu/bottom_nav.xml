@@ -15,7 +15,7 @@
         android:title="Habit" />
     <item
         android:id="@+id/nav_pomodoro"
-        android:icon="@drawable/timer"
+        android:icon="@drawable/timer_nav"
         android:title="Pomodoro" />
 
     <item

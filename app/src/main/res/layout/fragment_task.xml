@@ -6,16 +6,27 @@
     android:layout_height="match_parent"
     tools:context=".TaskFragment"
     android:background="@color/white">
-    <!--<TextView
+    <TextView
+        android:id="@+id/dialogHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Task Fragment" />
--->
+        android:text="Task Fragment"
+        app:layout_constraintBottom_toTopOf="@+id/taskrecyclerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textAlignment="center"/>
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView3"
+        android:id="@+id/taskrecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:scrollbars="vertical"
+        android:scrollIndicators="start"
+        android:scrollbarFadeDuration="@integer/material_motion_duration_long_2"
+        app:layout_constraintTop_toBottomOf="@+id/dialogHeading"
+
+        />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton3"
