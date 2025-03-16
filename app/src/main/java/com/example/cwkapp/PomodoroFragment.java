@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 
 import android.os.CountDownTimer;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,17 +23,20 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -41,13 +45,13 @@ import java.util.Set;
 public class PomodoroFragment extends Fragment {
     private CountDownTimer countDownTimer;
     private ToggleButton TimerToggleBtn;
-    private TextView sessionCountView;
+    private TextView sessionCountView, TaskSessionCountView;
     private Button resetTimerBtn;
     private Chronometer timer;
     private boolean istimerStarted = false;
-    private long pauseSet = 0;
     private String selectedTask = null;
     private int SessionCompleted = 0;
+    private Long SessionCount;
     private FirebaseFirestore firestoredb;
     private FirebaseAuth Auth;
     private FirebaseUser LoggedUser;
@@ -79,9 +83,12 @@ public class PomodoroFragment extends Fragment {
 
         TimerToggleBtn = view.findViewById(R.id.timerToggleBtn);
         sessionCountView =view.findViewById(R.id.SessionCountView);
+        TaskSessionCountView = view.findViewById(R.id.TaskSessionCountView);
+        retrieveSessionData();
+
+        updateTextView();
         timer = view.findViewById(R.id.chronometer);
         resetTimerBtn = view.findViewById(R.id.resetTimer);
-        retrieveSessionData();
         timer.setText("25:00");
         TimerToggleBtn.setText(null);
         TimerToggleBtn.setTextOn(null);
@@ -91,21 +98,23 @@ public class PomodoroFragment extends Fragment {
             public void onCheckedChanged(CompoundButton compoundButton, boolean Boolean) {
                 if(Boolean){
                     TimerStart();
-                    istimerStarted = true;
+
                 }else{ //pause the timer
                 countDownTimer.cancel();
                 istimerStarted = false;
                 }
             }
         });
-
-
         resetTimerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                resetTimer();
+                int min = (int) (25 * 60 * 1000/1000) / 60;
+                int sec = (int) (25 * 60 * 1000/1000) % 60;
+                timer.setText(String.format(Locale.getDefault(), "%02d:%02d", min, sec));
+                istimerStarted = false;
             }
         });
+
         dropdown = view.findViewById(R.id.dropdown);
         taskDropDown_list = view.findViewById(R.id.autocomplete_view);
         taskSelectionList = new ArrayAdapter<>(requireContext(), R.layout.dropdown_category_list, taskName);
@@ -114,8 +123,13 @@ public class PomodoroFragment extends Fragment {
         taskDropDown_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
                 String taskName = adapterView.getItemAtPosition(i).toString();
+                if(i == 0){
+                    selectedTask = null;
+                }else{
+                    selectedTask = taskList.get(i).getId();
+                    Log.d("Firestore","Selected task from the drop-down is: "+ selectedTask);
+                }
 
             }
         });
@@ -124,6 +138,7 @@ public class PomodoroFragment extends Fragment {
 
 
 private void selectTask(){
+
   firestoredb = FirebaseFirestore.getInstance();  //retreving the task names into the drop-down list.
   LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
   if (LoggedUser != null) {
@@ -137,15 +152,17 @@ private void selectTask(){
                           for (DocumentSnapshot doc : value.getDocuments()) {
                               String id = doc.getId();
                               TaskModel taskModel = doc.toObject(TaskModel.class);
+                              taskModel.setTaskId(id);
                               taskList.add(taskModel);
-                              taskName.add(taskModel.getTask()); //task name
-                              selectedTask = id; //get the Selected Task ID.
+                              taskName.add(taskModel.getTask());
+                              //task name
                           }
                           taskSelectionList.notifyDataSetChanged();
 
                       }
                   }
               });
+
   }
 }
 
@@ -160,10 +177,13 @@ countDownTimer = new CountDownTimer(10 * 1000, 1000) {
     public void onFinish() {
         timer.setText("00:00");
         TimerToggleBtn.setChecked(false);
-        SessionCompleted++;// increment the completed session only if session(timer) is finished.
+        SessionCompleted++;
+       // increment the completed session only if session(timer) is finished.
      //   resetTimer();
         completedSession();
-        retrieveSessionData();
+        retrieveTaskSessionData();
+        updateTextView();
+
         istimerStarted = false;
     }
 
@@ -171,37 +191,75 @@ countDownTimer = new CountDownTimer(10 * 1000, 1000) {
 istimerStarted = true;
 }
 
-private void resetTimer(){
-    int min = (int) (25 * 60 * 1000/1000) / 60;
-    int sec = (int) (25 * 60 * 1000/1000) % 60;
-    timer.setText(String.format(Locale.getDefault(), "%02d:%02d", min, sec));
-    istimerStarted = false;
-}
 
 private void completedSession() {
-        //Save the session data when timer is used without task.
-    if(selectedTask!=null){
+    if(selectedTask!=null) {
+        Log.d("Firestore","The id after task selection is: "+ selectedTask);
         firestoredb = FirebaseFirestore.getInstance();
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if(LoggedUser!=null){
+        if (LoggedUser != null) {
             String loggedUserId = LoggedUser.getUid();
+            int sessionCounts = SessionCompleted;
             firestoredb.collection("Task").document(loggedUserId)
-                    .collection("LoggedUser Task").document(selectedTask).update("sessionCounts", SessionCompleted++);
+                    .collection("LoggedUser Task")
+                    .document(selectedTask).update("sessionCounts", FieldValue.increment(1));
+
+        }
+        } else {
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("PomodoroSessions", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("Session Counts", SessionCompleted);
+            editor.apply();
+        }
+    }
+
+
+private void retrieveTaskSessionData() { //retrieve the session data stored in sharedpreferences.
+    if (selectedTask != null) {
+        firestoredb = FirebaseFirestore.getInstance();
+        LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (LoggedUser != null) {
+            String loggedUserId = LoggedUser.getUid();
+            firestoredb.collection("Task").document(loggedUserId).collection("LoggedUser Task").document(selectedTask).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    SessionCount = documentSnapshot.getLong("sessionCounts");
+                    Log.d("FireStore", "no.of task sessions: " + SessionCount);
+                    updateTaskTextView();
+                    //TaskSessionCountView.setText("Task Session Count: " + SessionCount);
+                }
+            });
+                    /*.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                            if (value != null) {
+                                for (DocumentSnapshot doc : value.getDocuments()) {
+                                    selectedTask = doc.getId();
+                                    TaskModel taskModel = doc.toObject(TaskModel.class);
+                                    Log.d("Firestore", "Total Session Counts: " + taskModel.getSessionCounts());
+                                    sessionCountView.setText("Session Counts For Task: " + taskModel.getSessionCounts());
+                                }
+
+                            }
+
+                        }
+                    });*/
         }
 
-    }else {
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("PomodoroSessions", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("Session Counts", SessionCompleted + 1);
-        editor.apply();
     }
 }
-
-private void retrieveSessionData() { //retrieve the session data stored in sharedpreferences.
-    //if(SelectedTask == null)
-    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("PomodoroSessions", Context.MODE_PRIVATE);
-    SessionCompleted = sharedPreferences.getInt("Session Counts", 0);
-    sessionCountView.setText("Session Counts: " + SessionCompleted);
+    private void retrieveSessionData(){
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("PomodoroSessions", Context.MODE_PRIVATE);
+        SessionCompleted = sharedPreferences.getInt("Session Counts", 0);
+        updateTextView();
     }
+
+    private void updateTextView(){
+        sessionCountView.setText("Session Counts: "+ SessionCompleted);
+    }
+    private void updateTaskTextView(){
+        TaskSessionCountView.setText("Task Session Count: "+ SessionCount);
+    }
+
 }
