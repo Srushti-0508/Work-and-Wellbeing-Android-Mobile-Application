@@ -25,8 +25,7 @@
             android:id="@+id/autocomplete_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:inputType="none"
-            />
+            android:inputType="none"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <ImageView
@@ -91,17 +90,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timerToggleBtn" />
+
     <TextView
         android:id="@+id/TaskSessionCountView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=""
+        android:text="Task Session Count"
         android:background="@color/bg_frame"
         android:textStyle="bold"
         android:textSize="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/SessionCountView" />
+
+    <Button
+        android:id="@+id/selectAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Music"
+        android:background="@drawable/bg_btn"
+        app:backgroundTint="@color/button"
+        android:drawableLeft="@drawable/music"
+        android:drawableTint="@color/paleYellow"
+        android:drawablePadding="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/TaskSessionCountView"/>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,7 @@
 package com.example.cwkapp;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -10,6 +11,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -32,13 +34,13 @@ public class Dashboard extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.BottomNavView);
         app_toolbar = findViewById(R.id.app_toolbar);
         setSupportActionBar(app_toolbar);
-        //binding?
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+bottomNavigationView.setItemActiveIndicatorColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.active_color)));
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if(item.getItemId() == R.id.nav_home){
                 title="Dashboard";

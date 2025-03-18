@@ -2,6 +2,7 @@ package com.example.cwkapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -20,10 +21,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.CompoundButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,13 +48,15 @@ import java.util.Set;
 
 public class PomodoroFragment extends Fragment {
     private CountDownTimer countDownTimer;
+    private long setTime = 10 * 1000;
     private ToggleButton TimerToggleBtn;
     private TextView sessionCountView, TaskSessionCountView;
-    private Button resetTimerBtn;
+    private Button resetTimerBtn, selectAudioBtn;
     private Chronometer timer;
     private boolean istimerStarted = false;
     private String selectedTask = null;
-    private int SessionCompleted = 0;
+    private MediaPlayer mediaPlayer;
+    private int SessionCompleted = 0, selectedAudioId = -1;
     private Long SessionCount;
     private FirebaseFirestore firestoredb;
     private FirebaseAuth Auth;
@@ -64,7 +70,6 @@ public class PomodoroFragment extends Fragment {
     public PomodoroFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,23 +100,59 @@ public class PomodoroFragment extends Fragment {
         TimerToggleBtn.setTextOff(null);
         TimerToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean Boolean) {
-                if(Boolean){
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
                     TimerStart();
+                    startAudio();
 
-                }else{ //pause the timer
-                countDownTimer.cancel();
-                istimerStarted = false;
+                }else{
+                   Log.d("Timer","Timer is paused");
+                    countDownTimer.cancel();
+                    istimerStarted = false;
+
+                    if(mediaPlayer !=null && mediaPlayer.isPlaying()){
+                    mediaPlayer.pause();
+                }
+
                 }
             }
         });
+
+
+
+    /*.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean Boolean) {
+                if(Boolean){
+                    //startAudio();
+                    TimerStart();
+                }else{//pause the timer
+                        countDownTimer.cancel();
+                        istimerStarted = false;
+                //pause music
+                    *//*if(mediaPlayer !=null && mediaPlayer.isPlaying()){
+                        mediaPlayer.pause();
+                    }*//*
+                }
+            }
+        });*/
+
         resetTimerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int min = (int) (25 * 60 * 1000/1000) / 60;
-                int sec = (int) (25 * 60 * 1000/1000) % 60;
-                timer.setText(String.format(Locale.getDefault(), "%02d:%02d", min, sec));
+                countDownTimer.cancel();
+                setTime = 10 * 1000;
+                /*int min = (int) (25 * 60 * 1000 / 1000) / 60;
+                int sec = (int) (25 * 60 * 1000 / 1000) % 60;
+                timer.setText(String.format(Locale.getDefault(), "%02d:%02d", min, sec));*/
+                timer.setText("25:00");
+                TimerToggleBtn.setChecked(false);
                 istimerStarted = false;
+                if(mediaPlayer !=null && mediaPlayer.isPlaying()){
+                    mediaPlayer.stop();
+                    mediaPlayer.release();
+                }
+
             }
         });
 
@@ -133,9 +174,15 @@ public class PomodoroFragment extends Fragment {
 
             }
         });
+        selectAudioBtn = view.findViewById(R.id.selectAudio);
+        selectAudioBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AudioBottomDialog();
+            }
+        });
 
     }
-
 
 private void selectTask(){
 
@@ -167,11 +214,12 @@ private void selectTask(){
 }
 
 private void TimerStart() {
-countDownTimer = new CountDownTimer(10 * 1000, 1000) {
+countDownTimer = new CountDownTimer(setTime, 1000) {
     public void onTick(long timeUntilFinish) {
+        setTime = timeUntilFinish;
         int min = (int) (timeUntilFinish / 1000) / 60;
         int sec = (int) (timeUntilFinish / 1000) % 60;
-        timer.setText(String.format("%02d:%02d", min, sec)); //display the time in two digits
+        timer.setText(String.format("%02d:%02d", min, sec));//display the time in two digits
     }
 
     public void onFinish() {
@@ -179,12 +227,15 @@ countDownTimer = new CountDownTimer(10 * 1000, 1000) {
         TimerToggleBtn.setChecked(false);
         SessionCompleted++;
        // increment the completed session only if session(timer) is finished.
-     //   resetTimer();
         completedSession();
         retrieveTaskSessionData();
         updateTextView();
-
         istimerStarted = false;
+        if(mediaPlayer !=null && mediaPlayer.isPlaying()){
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+
     }
 
 }.start();
@@ -260,6 +311,56 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
     }
     private void updateTaskTextView(){
         TaskSessionCountView.setText("Task Session Count: "+ SessionCount);
+    }
+
+    private void AudioBottomDialog(){
+        BottomSheetDialog audioDialog = new BottomSheetDialog(requireContext());
+        audioDialog.setContentView(R.layout.audio_bottomsheet);
+
+        RadioGroup radiogrp = audioDialog.findViewById(R.id.audio_radiogrp);
+        Button confirmAudioBtn = audioDialog.findViewById(R.id.OKBtn);
+
+        radiogrp.setOnCheckedChangeListener((radioGroup, chosenId) ->{
+            if(mediaPlayer != null){
+                mediaPlayer.release(); //stop any previous audio.
+                mediaPlayer=null;
+            }
+            int AudioPreviewId = getAudio(chosenId);
+            if(AudioPreviewId != -1) {
+                mediaPlayer = MediaPlayer.create(getContext(), AudioPreviewId);
+                mediaPlayer.start();
+            }
+        });
+
+       confirmAudioBtn.setOnClickListener(item->{
+           if(mediaPlayer != null){
+               mediaPlayer.release(); //stop any previous audio.
+               mediaPlayer=null;
+           }
+           selectedAudioId = getAudio(radiogrp.getCheckedRadioButtonId());
+           audioDialog.dismiss();
+       });
+
+        audioDialog.show();
+    }
+private int getAudio(int chosenId){
+    if(chosenId == R.id.rain_audio) return R.raw.rain;
+    if(chosenId == R.id.fire_audio) return R.raw.forest_fire;
+    if(chosenId == R.id.night_audio) return R.raw.night_ambience;
+    if(chosenId == R.id.nature_audio) return R.raw.nature_soundscape;
+    if(chosenId == R.id.waterfall_audio) return R.raw.waterfall;
+    if(chosenId == R.id.no_audio) return -1;
+    return -1;
+}
+    private void startAudio(){
+        if(selectedAudioId != -1){
+            if(mediaPlayer != null){
+                mediaPlayer.release();
+            }
+            mediaPlayer = MediaPlayer.create(requireContext(),selectedAudioId);
+            mediaPlayer.setLooping(true);
+            mediaPlayer.start();
+        }
     }
 
 }
