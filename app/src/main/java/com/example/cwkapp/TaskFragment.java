@@ -148,7 +148,7 @@ public class TaskFragment extends Fragment {
                             taskAdapter = new TaskAdapter(TaskFragment.this, taskList);
                             TaskRecyclerView.setAdapter(taskAdapter);
                             taskAdapter.notifyDataSetChanged();
-                            Log.d("Firestore", "Total tasks retrieved: " + taskModel.getTask());
+                            Log.d("Firestore", "Task Name retrieved: " + taskModel.getTask());
                         }
 
                         Log.d("Firestore", "Total Tasks Retrieved: " + taskList.size());

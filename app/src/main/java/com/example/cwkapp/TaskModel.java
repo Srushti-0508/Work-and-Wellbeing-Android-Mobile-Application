@@ -27,7 +27,6 @@ public class TaskModel {
     }
 
     public String getId() {return id;}
-
     public void setTaskId(String taskId) {
         this.id = taskId;
     }
@@ -40,3 +39,4 @@ public class TaskModel {
     public int getSessionCounts(){return sessionCounts; }
 
 }
+
