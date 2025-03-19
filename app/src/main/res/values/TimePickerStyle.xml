@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TimePickerBg" parent="Theme.Material3.Light.Dialog">
+        <item name="android:datePickerMode">spinner</item>
+        <item name="colorAccent">@color/heading</item>
+        <item name="android:textStyle">bold</item>
+        <item name="colorOnPrimary">@color/heading</item>
+        <item name="android:textColor">@color/heading</item>
+        <item name="android:textColorPrimary">@color/button</item>
+        <item name="android:windowBackground">@color/bg</item>
+
+    </style>
+
+</resources>
