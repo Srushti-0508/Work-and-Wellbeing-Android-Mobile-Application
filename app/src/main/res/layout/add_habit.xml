@@ -53,44 +53,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/dialogHeading" />
 
-            <Button
-                android:id="@+id/saveBtn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:backgroundTint="@color/heading"
-                android:text="Save"
-                app:layout_constraintTop_toBottomOf="@+id/dropdown"
-                app:layout_constraintStart_toStartOf="parent"
-                tools:layout_editor_absoluteX="21dp"/>
-                <!---->
-            <TextView
-                android:id="@+id/timerText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
-                android:text="Select Reminder Time"
-                android:textColor="@color/heading"
-                android:textSize="15dp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInputEditText" />
-
-            <TextView
-                android:id="@+id/timerTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
-                android:text="Time is: "
-                android:textColor="@color/heading"
-                android:textSize="15dp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@+id/timerText"
-                app:layout_constraintTop_toBottomOf="@+id/textInputEditText" />
-
-            <TimePicker
+            <!--<TimePicker
                 android:id="@+id/timePicker"
                 android:layout_width="237dp"
                 android:layout_height="131dp"
@@ -100,9 +63,25 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.51"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputEditText" />-->
+
+            <TextView
+                android:id="@+id/timePickerTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/time"
+                android:drawableTint="@color/heading"
+                android:drawablePadding="8dp"
+                android:padding="8dp"
+                android:text="Select Reminder Time"
+                android:textColor="@color/heading"
+                android:textSize="18dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textInputEditText" />
 
-            <com.google.android.material.textfield.TextInputLayout
+          <!--  <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/dropdown"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 app:boxBackgroundColor="@color/bg_frame"
@@ -121,7 +100,69 @@
                     android:layout_height="match_parent"
                     android:textStyle="bold"
                     android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>-->
+            <TextView
+                android:id="@+id/RepeatText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:text="Select Repeat"
+                android:textColor="@color/heading"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/timePickerTextView" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/RepeatBtn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/RepeatText"
+
+                app:singleSelection="true">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/RepeatBtn1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Never"
+                android:textColor="@color/heading"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:textStyle="bold"
+
+                />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/RepeatBtn2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Daily"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:textColor="@color/heading"
+                android:textStyle="bold"
+                />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/RepeatBtn3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weekly"
+                android:textColor="@color/heading"
+                android:textStyle="bold"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <Button
+                android:id="@+id/saveBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:backgroundTint="@color/heading"
+                android:text="Save"
+                app:layout_constraintTop_toBottomOf="@+id/RepeatBtn"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:layout_editor_absoluteX="21dp"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

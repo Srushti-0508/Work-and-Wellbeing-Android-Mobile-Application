@@ -242,7 +242,12 @@ public class TaskFragment extends Fragment {
 
         if(ediTask != null){
             task_text.setText(ediTask.getTask());
-            date_picker.setText(ediTask.getDate());
+            if(ediTask.getDate()!=null){
+                date_picker.setText(ediTask.getDate());
+            }else{
+                date_picker.setText("Select Date");
+            }
+
             dropdown_list.setText(ediTask.getCategory());
         String getPriority = ediTask.getPriority();
             if(getPriority != null){

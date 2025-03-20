@@ -1,6 +1,7 @@
 package com.example.cwkapp;
 
 import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,8 +42,10 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -50,21 +54,23 @@ public class HabitFragment extends Fragment {
     private FirebaseFirestore firestoredb;
     private FirebaseAuth Auth;
     private FirebaseUser LoggedUser;
-    private String time, currentDate;
-    private String[] repeat_list = {"Never", "Daily", "Weekly"};
+    private String time, currentDate, repeatText;
+   /* private String[] repeat_list = {"Never", "Daily", "Weekly"};
     private ArrayAdapter<String> adapterRepeatList;
     private TextInputLayout dropDown;
-    private AutoCompleteTextView dropDown_list;
+    private AutoCompleteTextView dropDown_list;*/
 
     private FloatingActionButton HabitFab;
     private EditText habit_text;
-    private TimePicker timePicker;
+    //private TimePicker timePicker;
+    private TextView timePickerTextView;
+    private MaterialButtonToggleGroup repeatBtnGrp;
     private Button saveBtn;
 
     private HabitAdapter habitAdapter;
     private ArrayList<HabitModel> habitList;
 
-    private TextView timeTV;
+
 
     public HabitFragment() {
         // Required empty public constructor
@@ -105,21 +111,38 @@ public class HabitFragment extends Fragment {
         final Dialog AddHabitDialog = new Dialog(getContext());
         AddHabitDialog.setContentView(R.layout.add_habit);
         AddHabitDialog.setCancelable(true);
-        timeTV = AddHabitDialog.findViewById(R.id.timerTextView);
         habit_text = AddHabitDialog.findViewById(R.id.textInputEditText);
-        timePicker = AddHabitDialog.findViewById(R.id.timePicker);
-        timePicker.setIs24HourView(true);
+        timePickerTextView = AddHabitDialog.findViewById(R.id.timePickerTextView);
+        /*timePicker.setIs24HourView(true);
         timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
             @Override
             public void onTimeChanged(TimePicker timePicker, int hour, int min) {
                 timeTV.setText(hour + ":" + min);
-                time = hour+":"+min;
+                time = String.format("%02d:%02d", hour, min);
+            }
+        });*/
+        timePickerTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar selectTime = Calendar.getInstance();
+                int hour = selectTime.get(Calendar.HOUR);
+                int min = selectTime.get(Calendar.MINUTE);
+
+                TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int h, int m) {
+                        time = String.format("%02d:%02d",h, m);
+                        timePickerTextView.setText(time);
+                    }
+                }, hour, min,true);
+                timePickerDialog.show();
             }
         });
 
+        repeatBtnGrp = AddHabitDialog.findViewById(R.id.RepeatBtn);
         saveBtn = AddHabitDialog.findViewById(R.id.saveBtn);
 
-        dropDown = AddHabitDialog.findViewById(R.id.dropdown);
+       /* dropDown = AddHabitDialog.findViewById(R.id.dropdown);
         dropDown_list =AddHabitDialog.findViewById(R.id.autocomplete_view);
         adapterRepeatList = new ArrayAdapter<String>(getContext(), R.layout.dropdown_category_list, repeat_list);
 
@@ -129,23 +152,49 @@ public class HabitFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String repeat_list = adapterView.getItemAtPosition(i).toString();
             }
-        });
+        });*/
 
         if(editHabit!=null){
             habit_text.setText(editHabit.getHabit());
-            Log.d("Firestore","getting the repeat time: "+editHabit.getRepeatTime());
-            dropDown_list.setText(editHabit.getRepeatTime(),false);
-            saveBtn.setText("Update Habit");
+            Log.d("Firestore","getting the repeat time: "+ editHabit.getRepeatTime());
             if(editHabit.getReminderTime()!=null){
-                String[] parts = editHabit.getReminderTime().split(":");
-                int hour = Integer.parseInt(parts[0]);
-                int minute = Integer.parseInt(parts[1]);
-                timePicker.post(()->{
+                timePickerTextView.setText(editHabit.getReminderTime());
+            }else{
+                timePickerTextView.setText("Select Time");
+            }
+
+            String getRepeatText = editHabit.getRepeatTime();
+            if(getRepeatText !=null){
+                switch(getRepeatText){
+                    case("Never"):
+                        repeatBtnGrp.check(R.id.RepeatBtn1);
+                        break;
+                    case("Daily"):
+                        repeatBtnGrp.check(R.id.RepeatBtn2);
+                        break;
+                    case("Weekly"):
+                        repeatBtnGrp.check(R.id.RepeatBtn3);
+                        break;
+                }
+            }else{
+                repeatBtnGrp.clearChecked();
+            }
+            saveBtn.setText("Update Habit");
+            //dropDown_list.setText(editHabit.getRepeatTime());
+            /*String reminderTime = editHabit.getReminderTime();
+            if(reminderTime!=null && !reminderTime.isEmpty()){
+                String[] parts = reminderTime.split(":");
+                if(parts.length == 2){
+                    int hour = Integer.parseInt(parts[0]);
+                    int minute = Integer.parseInt(parts[1]);
                     timePicker.setHour(hour);
                     timePicker.setMinute(minute);
-                });
+                    time = reminderTime;
+                }
 
-            }
+            }*/
+
+
 
 
         }
@@ -153,16 +202,37 @@ public class HabitFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 String habitText = habit_text.getText().toString();
-                String RepeatTimeText = dropDown_list.getText().toString();
+                String reminderTime = time;
+              //  String RepeatTimeText = dropDown_list.getText().toString();
+                int selectedRepeatBtnId = repeatBtnGrp.getCheckedButtonId();
+
+                if(selectedRepeatBtnId == R.id.RepeatBtn1){
+                    repeatText = "Never";
+                }else if(selectedRepeatBtnId == R.id.RepeatBtn2){
+                    repeatText = "Daily";
+                }
+                else if(selectedRepeatBtnId == R.id.RepeatBtn3){
+                    repeatText = "Weekly";
+                }
+
+
+                String currentDate = new SimpleDateFormat("ddMMyyyy").format(new Date());
+                List<String> completionDate = new ArrayList<>();
+                completionDate.add(currentDate);
 
                 if(habitText.isEmpty()){
                     Toast.makeText(getContext(), "Habit name is required", Toast.LENGTH_SHORT).show();
                 }else{
+
                     if(editHabit == null){
-                        SaveHabit(habitText, RepeatTimeText, time);
+                        HabitModel habitModel = new HabitModel(habitText, reminderTime, repeatText, completionDate, currentDate);
+                        SaveHabit(habitModel);
                     }else{
+                        editHabit.setHabit(habitText);
+                        editHabit.setReminderTime(reminderTime);
+                        editHabit.setRepeatTime(repeatText);
                         Log.d("EditHabit", "Editing Habit with ID: " + editHabit.getId());
-                        EditHabit(editHabit.getId(), habitText, RepeatTimeText, time);
+                        EditHabit(editHabit.getId(), editHabit);
                     }
 
                 }
@@ -172,24 +242,26 @@ public class HabitFragment extends Fragment {
     }
 
 
-    private void SaveHabit(String habitText, String RepeatTimeText, String reminderTime) {
+    private void SaveHabit(HabitModel saveHabit) {
         firestoredb = FirebaseFirestore.getInstance();
-        currentDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
-        Map<String, Object> Habit = new HashMap<>();
-        Habit.put("habit", habitText);
-        Habit.put("time", reminderTime);
-        Habit.put("repeat", RepeatTimeText);
-        Habit.put("completionDate", FieldValue.arrayUnion(currentDate));
 
+       /* Map<String, Object> Habit = new HashMap<>();
+        Habit.put("habit", saveHabit.getHabit());
+        Habit.put("time", saveHabit.getReminderTime());
+        Habit.put("repeat", saveHabit.getRepeatTime());
+        Habit.put("completionDate", new ArrayList<>());
+        Habit.put("currentDate",saveHabit.getCurrrentDate());
+*/
 
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
         if (LoggedUser != null) {
             String loggedUserId = LoggedUser.getUid();
-
+            saveHabit.setHabitId(null);
+            saveHabit.setCompletionDate(new ArrayList<>());
             firestoredb.collection("Habit")
                     .document(loggedUserId)
                     .collection("LoggedUser Habit")
-                    .add(Habit).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    .add(saveHabit).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentReference> task) {
                             if (task.isSuccessful()) {
@@ -207,7 +279,13 @@ public class HabitFragment extends Fragment {
         }
     }
 
-    private void EditHabit(String id, String habitText, String RepeatTimeText, String reminderTime) {
+    private void EditHabit(String id, HabitModel updateHabit) {
+
+        firestoredb = FirebaseFirestore.getInstance();
+        /*Map<String, Object> habitUpdate = new HashMap<>();
+        habitUpdate.put("habit", updateHabit.getHabit());
+        habitUpdate.put("time", updateHabit.getReminderTime());
+        habitUpdate.put("repeat", updateHabit.getRepeatTime());*/
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (LoggedUser != null) {
@@ -215,7 +293,7 @@ public class HabitFragment extends Fragment {
             firestoredb.collection("Habit")
                     .document(loggedUserId)
                     .collection("LoggedUser Habit").document(id)
-                    .update("habit", habitText, "repeat",RepeatTimeText, "time", reminderTime)
+                    .set(updateHabit)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> t) {
@@ -230,6 +308,7 @@ public class HabitFragment extends Fragment {
     }
 
     private void DisplayHabit(RecyclerView HabitRecyclerView) {
+
         firestoredb = FirebaseFirestore.getInstance();
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -237,22 +316,27 @@ public class HabitFragment extends Fragment {
             String loggedUserId = LoggedUser.getUid();
             firestoredb.collection("Habit")
                     .document(loggedUserId)
-                    .collection("LoggedUser Habit").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    .collection("LoggedUser Habit")
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException error) {
                             if(snapshot!=null){
                                 habitList = new ArrayList<>();
                                 for(DocumentSnapshot document: snapshot.getDocuments()){
+
                                     String id = document.getId();
-                                    HabitModel habitModel = document.toObject(HabitModel.class);
-                                    habitModel.setHabitId(id);
-                                    habitList.add(habitModel);
-                                    habitAdapter = new HabitAdapter(HabitFragment.this,habitList);
+                                    HabitModel habit = document.toObject(HabitModel.class);
+                                    //Log.d("Firestore", "Habit Retrieved: " + habit.getHabit() + " | "
+                                         //   + habit.getRepeatTime() + " | " + habit.getReminderTime()+ " | "+habit.getCurrrentDate());
+                                    habit.setHabitId(id);
+                                    habitList.add(habit);
+
+                                    habitAdapter = new HabitAdapter(HabitFragment.this, habitList);
                                     HabitRecyclerView.setAdapter(habitAdapter);
                                     habitAdapter.notifyDataSetChanged();
-                                    Log.d("Firestore", "Habit Name retrieved: " + habitModel.getHabit());
+                                    //Log.d("Firestore", "Habit Name retrieved: " + habit.getHabit());
                                 }
-                                Log.d("Firestore","Total Habit Retrieved: "+habitList.size());
+                                //Log.d("Firestore","Total Habit Retrieved: "+habitList.size());
                             }
                         }
                     });

@@ -7,8 +7,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -54,8 +57,23 @@ private String currentDate;
 
         String loggedUserId = LoggedUser.getUid();
         HabitModel habit = habitList.get(position);
+        //Log.d("Adapter","Habit from adapter: "+habit.getHabit()+" | Reminder: "+habit.getReminderTime() + " | Repeat: "+habit.getRepeatTime());
         String id = habit.getId();
         vh.habitText.setText(habit.getHabit());
+        vh.habitText.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    db.collection("Habit").document(loggedUserId)
+                            .collection("LoggedUser Habit").document(id)
+                            .update("completionDate", FieldValue.arrayUnion(currentDate));
+                }else{
+                    db.collection("Habit").document(loggedUserId)
+                            .collection("LoggedUser Habit").document(id)
+                            .update("completionDate", FieldValue.arrayRemove(currentDate));
+                }
+            }
+        });
 
         //method for checking the habit, and adding the date to the db.
         //Similarly to remove, Just like in task we are changing the values, here we need to store the date.
@@ -69,7 +87,7 @@ private String currentDate;
                    @Override
                    public boolean onMenuItemClick(MenuItem menuItem) {
                        if(menuItem.getItemId() == R.id.popup_edit){
-                           Log.d("DEBUG","Habit to Edit: "+ habit.getHabit() + " | "+habit.getRepeatTime()+" | "+habit.getReminderTime());
+                           //Log.d("DEBUG","Habit to Edit: "+ habit.getHabit() + " | "+habit.getRepeatTime()+" | "+habit.getReminderTime());
                            habitFragment.AddHabit(habit);
                        }else if(menuItem.getItemId() ==R.id.popup_delete){
                            deleteHabit(habit, vh.getAdapterPosition());
@@ -81,6 +99,7 @@ private String currentDate;
         });
 
     }
+
     private void deleteHabit(HabitModel habitModel, int positon){
         String loggedUserId = LoggedUser.getUid();
         habitModel = habitList.get(positon);
@@ -91,7 +110,7 @@ private String currentDate;
                     public void onSuccess(Void unused) {
                         habitList.remove(positon);
                         notifyItemRemoved(positon);
-                        Toast.makeText(habitFragment.getContext(), "Task Deleted Successfully", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(habitFragment.getContext(), "Habit Deleted Successfully", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -104,10 +123,12 @@ private String currentDate;
     public static class viewHolder extends RecyclerView.ViewHolder{
         private ImageView more_menu_img;
         private CheckBox habitText;
+
         public viewHolder(@NonNull View view){
             super(view);
             more_menu_img = view.findViewById(R.id.HabitmoreMenu);
             habitText =view.findViewById(R.id.Habitcheckbox);
+
         }
 
     }
