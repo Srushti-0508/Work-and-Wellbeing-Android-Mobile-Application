@@ -1,11 +1,13 @@
 package com.example.cwkapp;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -34,11 +36,12 @@ private FirebaseUser LoggedUser;
 private FirebaseFirestore db;
 private ArrayList<HabitModel> habitList;
 private String currentDate;
+private Button confirm, cancel;
 
     public HabitAdapter(HabitFragment habitFragment, ArrayList<HabitModel> habitList) {
         this.habitFragment = habitFragment;
         this.habitList = habitList;
-        currentDate = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+        currentDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
     }
 
     @NonNull
@@ -90,7 +93,28 @@ private String currentDate;
                            //Log.d("DEBUG","Habit to Edit: "+ habit.getHabit() + " | "+habit.getRepeatTime()+" | "+habit.getReminderTime());
                            habitFragment.AddHabit(habit);
                        }else if(menuItem.getItemId() ==R.id.popup_delete){
-                           deleteHabit(habit, vh.getAdapterPosition());
+
+                           Dialog ConfirmationDialog = new Dialog(habitFragment.getContext());
+                           ConfirmationDialog.setContentView(R.layout.confirmation_dialog);
+                           ConfirmationDialog.setCancelable(false);
+
+                           confirm = ConfirmationDialog.findViewById(R.id.OKBtn);
+                           cancel = ConfirmationDialog.findViewById(R.id.CancelBtn);
+
+                           confirm.setOnClickListener(new View.OnClickListener() {
+                               @Override
+                               public void onClick(View view) {
+                                   deleteHabit(habit, vh.getAdapterPosition());
+                                   ConfirmationDialog.dismiss();
+                               }
+                           });
+                           cancel.setOnClickListener(new View.OnClickListener() {
+                               @Override
+                               public void onClick(View view) {
+                                   ConfirmationDialog.dismiss();
+                               }
+                           });
+                           ConfirmationDialog.show();
                        }
                        return true;
                    }

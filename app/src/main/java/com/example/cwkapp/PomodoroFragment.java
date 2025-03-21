@@ -229,7 +229,7 @@ countDownTimer = new CountDownTimer(setTime, 1000) {
        // increment the completed session only if session(timer) is finished.
         completedSession();
         retrieveTaskSessionData();
-        updateTextView();
+        //updateTextView();
         istimerStarted = false;
         if(mediaPlayer !=null && mediaPlayer.isPlaying()){
             mediaPlayer.stop();
@@ -251,7 +251,7 @@ private void completedSession() {
 
         if (LoggedUser != null) {
             String loggedUserId = LoggedUser.getUid();
-            int sessionCounts = SessionCompleted;
+            //int sessionCounts = SessionCompleted;
             firestoredb.collection("Task").document(loggedUserId)
                     .collection("LoggedUser Task")
                     .document(selectedTask).update("sessionCounts", FieldValue.increment(1));
@@ -320,7 +320,7 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
         RadioGroup radiogrp = audioDialog.findViewById(R.id.audio_radiogrp);
         Button confirmAudioBtn = audioDialog.findViewById(R.id.OKBtn);
 
-        radiogrp.setOnCheckedChangeListener((radioGroup, chosenId) ->{
+       /* radiogrp.setOnCheckedChangeListener((radioGroup, chosenId) ->{
             if(mediaPlayer != null){
                 mediaPlayer.release(); //stop any previous audio.
                 mediaPlayer=null;
@@ -330,6 +330,41 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
                 mediaPlayer = MediaPlayer.create(getContext(), AudioPreviewId);
                 mediaPlayer.start();
             }
+        });*/
+
+        radiogrp.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int chosenId) {
+                if(mediaPlayer != null){
+                    mediaPlayer.release(); //stop any previous audio.
+                    mediaPlayer=null;
+                }
+
+                if(chosenId ==R.id.rain_audio){
+                    mediaPlayer = MediaPlayer.create(getContext(), R.raw.rain);
+                    mediaPlayer.start();
+                    selectedAudioId = R.raw.rain;
+;                } else if(chosenId ==R.id.fire_audio){
+                    mediaPlayer = MediaPlayer.create(getContext(), R.raw.forest_fire);
+                    mediaPlayer.start();
+                    selectedAudioId = R.raw.forest_fire;
+                }else if(chosenId ==R.id.night_audio){
+                    mediaPlayer = MediaPlayer.create(getContext(), R.raw.night_ambience);
+                    mediaPlayer.start();
+                    selectedAudioId = R.raw.night_ambience;
+                }else if(chosenId ==R.id.nature_audio){
+                    mediaPlayer = MediaPlayer.create(getContext(), R.raw.nature_soundscape);
+                    mediaPlayer.start();
+                    selectedAudioId = R.raw.nature_soundscape;
+                }else if(chosenId ==R.id.waterfall_audio){
+                    mediaPlayer = MediaPlayer.create(getContext(), R.raw.waterfall);
+                    mediaPlayer.start();
+                    selectedAudioId = R.raw.waterfall;
+                }else if(chosenId ==R.id.no_audio){
+                    mediaPlayer = null;
+                    selectedAudioId = -1;
+                }
+            }
         });
 
        confirmAudioBtn.setOnClickListener(item->{
@@ -337,13 +372,13 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
                mediaPlayer.release(); //stop any previous audio.
                mediaPlayer=null;
            }
-           selectedAudioId = getAudio(radiogrp.getCheckedRadioButtonId());
+          // selectedAudioId = getAudio(radiogrp.getCheckedRadioButtonId());
            audioDialog.dismiss();
        });
 
         audioDialog.show();
     }
-private int getAudio(int chosenId){
+/*private int getAudio(int chosenId){
     if(chosenId == R.id.rain_audio) return R.raw.rain;
     if(chosenId == R.id.fire_audio) return R.raw.forest_fire;
     if(chosenId == R.id.night_audio) return R.raw.night_ambience;
@@ -351,7 +386,7 @@ private int getAudio(int chosenId){
     if(chosenId == R.id.waterfall_audio) return R.raw.waterfall;
     if(chosenId == R.id.no_audio) return -1;
     return -1;
-}
+}*/
     private void startAudio(){
         if(selectedAudioId != -1){
             if(mediaPlayer != null){

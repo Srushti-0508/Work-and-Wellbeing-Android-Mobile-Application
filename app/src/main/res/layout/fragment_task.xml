@@ -21,12 +21,32 @@
         android:id="@+id/taskrecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:scrollbars="vertical"
-        android:scrollIndicators="start"
-        android:scrollbarFadeDuration="@integer/material_motion_duration_long_2"
-        app:layout_constraintTop_toBottomOf="@+id/dialogHeading"
+        app:layout_constraintTop_toBottomOf="@+id/dialogHeading" />
 
-        />
+    <TextView
+        android:id="@+id/CompletedTaskText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
+        android:text="Completed Task"
+        app:layout_constraintTop_toBottomOf="@+id/taskrecyclerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textAlignment="center"/>
+
+    <ListView
+        android:id="@+id/completedTaskLV"
+        android:textAlignment="textStart"
+        android:background="@drawable/bg_frame"
+        android:backgroundTint="@color/heading"
+        android:divider="@color/heading"
+        android:scrollbars="vertical"
+        android:scrollIndicators="end"
+        android:dividerHeight="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/CompletedTaskText" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton3"

@@ -4,6 +4,7 @@ import static androidx.core.content.ContentProviderCompat.requireContext;
 import static java.security.AccessController.getContext;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.text.Layout;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -38,6 +40,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
     private FirebaseUser LoggedUser;
     private ArrayList<TaskModel> taskList;
     private FirebaseFirestore db;
+    private Button confirm, cancel;
+
 
     public TaskAdapter(TaskFragment taskFragment/*Context context*/, ArrayList<TaskModel> taskList) {
         this.taskList = taskList;
@@ -45,11 +49,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
        // this.context = context;
     }
 
-    public void updateTaskAdapter(ArrayList<TaskModel> newTaskList){
+    /*public void updateTaskAdapter(ArrayList<TaskModel> newTaskList){
         this.taskList.clear();
         this.taskList.addAll(newTaskList);
         notifyDataSetChanged();
-    }
+    }*/
 
     @NonNull
     @Override
@@ -57,6 +61,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.task_view, parent, false);
         db = FirebaseFirestore.getInstance();
         return new viewHolder(v);
+
     }
 
     @Override
@@ -64,7 +69,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
 
         String loggedUserId = LoggedUser.getUid();
+
         TaskModel task = taskList.get(position);
+
         String id = task.getId();
         vh.taskText.setText(task.getTask());
         //Log.d("Adapter", "Binding Task: " + task.getTask());
@@ -77,9 +84,19 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
         vh.taskText.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                int p = vh.getAdapterPosition();
                 if(b){
                         db.collection("Task").document(loggedUserId)
-                           .collection("LoggedUser Task").document(id).update("isChecked", 1);
+                           .collection("LoggedUser Task").document(id).update("isChecked", 1).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void unused) {
+                                        //TaskModel completedTaskModel = taskList.get(vh.getAdapterPosition());
+                                        taskList.remove(p);
+                                        notifyItemRemoved(p);
+                                        //notifyItemRangeChanged(vh.getAdapterPosition(), taskList.size());
+                                        Toast.makeText(taskFragment.getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                 }else{
                     db.collection("Task").document(loggedUserId)
                             .collection("LoggedUser Task").document(id).update("isChecked",0);
@@ -109,7 +126,27 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
                             //taskFragment.AddTask(ediTask);
 
                         }else if(menuItem.getItemId() == R.id.popup_delete){
-                            deleteTask(task, vh.getAdapterPosition());
+                            Dialog ConfirmationDialog = new Dialog(taskFragment.getContext());
+                            ConfirmationDialog.setContentView(R.layout.confirmation_dialog);
+                            ConfirmationDialog.setCancelable(false);
+
+                            confirm = ConfirmationDialog.findViewById(R.id.OKBtn);
+                            cancel = ConfirmationDialog.findViewById(R.id.CancelBtn);
+
+                            confirm.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    deleteTask(task, vh.getAdapterPosition());
+                                    ConfirmationDialog.dismiss();
+                                }
+                            });
+                            cancel.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    ConfirmationDialog.dismiss();
+                                }
+                            });
+                            ConfirmationDialog.show();
 
                         }
                         return false;
@@ -124,6 +161,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
     }
 
     public void deleteTask(TaskModel taskModel, int position){
+
         String loggedUserId = LoggedUser.getUid();
         taskModel = taskList.get(position);
         String id = taskModel.getId();

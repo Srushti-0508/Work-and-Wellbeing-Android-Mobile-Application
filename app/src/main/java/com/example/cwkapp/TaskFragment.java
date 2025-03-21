@@ -23,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
@@ -53,6 +55,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -64,8 +67,9 @@ public class TaskFragment extends Fragment {
     private FirebaseUser LoggedUser;
     private String[] category_list = {"General", "Work", "Study", "Home"};
     private String date, priorityText;
-    private ArrayAdapter<String> adapterCategoryList, taskSelectionList;
-    private TaskAdapter taskAdapter;
+    private ArrayAdapter<String> adapterCategoryList, adapterCompletedTask;
+    private List<String>completedTaskList;
+    private ListView completedTaskLV;
     private AutoCompleteTextView dropdown_list;
     private FloatingActionButton taskFab;
     private Button saveBtn;
@@ -74,7 +78,9 @@ public class TaskFragment extends Fragment {
     private TextView date_picker;
     private TextInputLayout dropdown;
     private MaterialButtonToggleGroup priorityBtnGrp;
+    private TaskAdapter taskAdapter, CompletedTaskAdapter;
     private ArrayList<TaskModel> taskList;
+
 
     public TaskFragment() {
         // Required empty public constructor
@@ -94,6 +100,16 @@ public class TaskFragment extends Fragment {
         RecyclerView TaskRecyclerView = root.findViewById(R.id.taskrecyclerView);
         TaskRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         displayTask(TaskRecyclerView);
+
+        /*RecyclerView CompletedTaskRV = root.findViewById(R.id.completedTaskRV);
+        CompletedTaskRV.setLayoutManager(new LinearLayoutManager(getContext()));
+        displayCompletedTask(CompletedTaskRV);*/
+
+        completedTaskLV = root.findViewById(R.id.completedTaskLV);
+        completedTaskList = new ArrayList<>();
+        adapterCompletedTask = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, completedTaskList);
+        completedTaskLV.setAdapter(adapterCompletedTask);
+        displayCompletedTask();
         return root;
     }
 
@@ -133,7 +149,7 @@ public class TaskFragment extends Fragment {
 
            firestoredb.collection("Task")
                     .document(loggedUserId)
-                    .collection("LoggedUser Task")
+                    .collection("LoggedUser Task").whereEqualTo("isChecked",0)
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException error) {
@@ -374,6 +390,38 @@ public class TaskFragment extends Fragment {
                             }
                         }
                     });
+        }
+    }
+
+    private void displayCompletedTask(){
+        firestoredb = FirebaseFirestore.getInstance();
+        LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (LoggedUser != null) {
+            String loggedUserId = LoggedUser.getUid();
+
+            firestoredb.collection("Task")
+                    .document(loggedUserId)
+                    .collection("LoggedUser Task").whereEqualTo("isChecked",1)
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                            if(value!=null){
+                                for(DocumentSnapshot doc: value.getDocuments()){
+                                    String id = doc.getId();
+                                    //TaskModel completedTask = doc.toObject(TaskModel.class);
+                                    //completedTask.setTaskId(id);
+                                    String taskName = String.valueOf(doc.get("task"));
+                                    //completedTask.setTask(taskName);
+                                    completedTaskList.add(taskName);
+                                    adapterCompletedTask.notifyDataSetChanged();
+                                }
+                            }
+
+                        }
+                    });
+
+
         }
     }
 

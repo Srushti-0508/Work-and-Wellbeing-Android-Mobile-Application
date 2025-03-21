@@ -16,6 +16,8 @@ public class TaskModel {
     public TaskModel() {
     }
 
+
+
     public TaskModel(String id, String task, String priority, String category, String date, int isChecked, int sessionCounts) {
         this.id = id;
         this.task = task;
@@ -32,6 +34,9 @@ public class TaskModel {
     }
 
     public String getTask() {return task; }
+    public void setTask(String task) {
+        this.task = task;
+    }
     public String getCategory() {return category;}
     public String getDate() {return date;}
     public String getPriority() { return priority; }

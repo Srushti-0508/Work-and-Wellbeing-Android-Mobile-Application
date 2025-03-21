@@ -216,7 +216,7 @@ public class HabitFragment extends Fragment {
                 }
 
 
-                String currentDate = new SimpleDateFormat("ddMMyyyy").format(new Date());
+                String currentDate = new SimpleDateFormat("dd/MM/yyyy",Locale.getDefault()).format(new Date());
                 List<String> completionDate = new ArrayList<>();
                 completionDate.add(currentDate);
 
