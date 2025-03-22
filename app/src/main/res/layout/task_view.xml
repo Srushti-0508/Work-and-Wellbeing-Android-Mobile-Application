@@ -13,7 +13,6 @@
         android:background="@drawable/bg_frame"
         android:backgroundTint="@color/bg_frame"
         app:cardCornerRadius="30dp"
-
         app:cardElevation="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -27,7 +26,6 @@
                 android:id="@+id/categoryText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="Category: "
                 android:textColor="@color/heading"
                 android:textSize="15dp"
@@ -35,14 +33,12 @@
                 app:layout_constraintBottom_toTopOf="@+id/checkbox"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0"
                 tools:ignore="TextSizeCheck" />
 
             <TextView
                 android:id="@+id/CTypeTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
                 android:text="Type"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@+id/checkbox"
@@ -54,8 +50,6 @@
                 android:id="@+id/checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="4dp"
                 android:buttonTint="@color/heading"
                 android:text="Task 1"
                 android:textSize="15sp"
@@ -67,25 +61,23 @@
                 android:id="@+id/priorityText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="132dp"
                 android:text="Priority: "
                 android:textColor="@color/heading"
                 android:textSize="15dp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@+id/dateText"
-                app:layout_constraintStart_toEndOf="@+id/categoryText"
+                app:layout_constraintStart_toEndOf="@+id/CTypeTextView"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.2"
+                app:layout_constraintVertical_bias="0.05"
                 tools:ignore="TextSizeCheck" />
 
             <TextView
                 android:id="@+id/PLevelTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:text="Level"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/DateTextView"
                 app:layout_constraintStart_toEndOf="@+id/priorityText"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -93,27 +85,26 @@
                 android:id="@+id/dateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-
-                android:layout_marginStart="124dp"
-                android:layout_marginTop="16dp"
                 android:text="Date: "
                 android:textColor="@color/heading"
                 android:textSize="15dp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/checkbox"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/PLevelTextView"
+                app:layout_constraintBottom_toBottomOf="parent"
                 tools:ignore="TextSizeCheck" />
 
             <TextView
                 android:id="@+id/DateTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="16dp"
+
                 android:text="08-03-2025"
                 android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/dateText"
-                app:layout_constraintTop_toBottomOf="@+id/PLevelTextView" />
+                app:layout_constraintTop_toBottomOf="@+id/PLevelTextView"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
             <ImageView
                 android:id="@+id/moreMenu"

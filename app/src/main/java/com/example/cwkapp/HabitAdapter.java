@@ -62,7 +62,13 @@ private Button confirm, cancel;
         HabitModel habit = habitList.get(position);
         //Log.d("Adapter","Habit from adapter: "+habit.getHabit()+" | Reminder: "+habit.getReminderTime() + " | Repeat: "+habit.getRepeatTime());
         String id = habit.getId();
+        if(habit.getCompletionDate()!=null && habit.getCompletionDate().contains(currentDate)){
+            vh.habitText.setChecked(true);
+        }else{
+            vh.habitText.setChecked(false);
+        }
         vh.habitText.setText(habit.getHabit());
+       // vh.habitText.setChecked(habit.isChecked());
         vh.habitText.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -70,6 +76,7 @@ private Button confirm, cancel;
                     db.collection("Habit").document(loggedUserId)
                             .collection("LoggedUser Habit").document(id)
                             .update("completionDate", FieldValue.arrayUnion(currentDate));
+                           // Toast.makeText(habitFragment.getContext(),"Your Habit marked completed for today", Toast.LENGTH_SHORT);
                 }else{
                     db.collection("Habit").document(loggedUserId)
                             .collection("LoggedUser Habit").document(id)

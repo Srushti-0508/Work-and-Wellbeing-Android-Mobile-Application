@@ -9,6 +9,7 @@ public class HabitModel {
 
     private String habit, reminderTime, repeatTime, todayDate;
     private List<String> completionDate;
+    //private boolean isChecked;
 
     @Exclude                //avoid storing HabitId inside the Firestore doc.
     private String id;
@@ -22,6 +23,7 @@ public class HabitModel {
         this.repeatTime = repeatTime;
         this.completionDate = completionDate;
         this.todayDate = todayDate;
+        //this.isChecked = false;
     }
 
 
@@ -47,8 +49,6 @@ public class HabitModel {
         this.repeatTime = repeatTime;
     }
 
-
-
     public String getTodayDate() {
         return todayDate;
     }
@@ -62,6 +62,14 @@ public class HabitModel {
     public void setCompletionDate(List<String> completionDate) {
         this.completionDate = completionDate;
     }
+
+    /*public boolean isChecked() {
+        return isChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        isChecked = checked;
+    }*/
 
     @Exclude
     public String getId() {

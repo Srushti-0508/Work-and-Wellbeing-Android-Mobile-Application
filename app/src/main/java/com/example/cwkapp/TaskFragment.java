@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +30,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -75,7 +77,7 @@ public class TaskFragment extends Fragment {
     private Button saveBtn;
     //private MaterialButton high, medium, low;
     private EditText task_text;
-    private TextView date_picker;
+    private TextView date_picker, completedListTextView;
     private TextInputLayout dropdown;
     private MaterialButtonToggleGroup priorityBtnGrp;
     private TaskAdapter taskAdapter, CompletedTaskAdapter;
@@ -126,7 +128,13 @@ public class TaskFragment extends Fragment {
 
         TaskRecyclerView.setAdapter(taskAdapter);
         displayTask();*/
-
+        completedListTextView = view.findViewById(R.id.completedListHeading);
+        completedListTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                changeFragment(new CompletedTaskFragment());
+            }
+        });
         taskFab = view.findViewById(R.id.floatingActionButton3);
         if (taskFab != null) {
             taskFab.setOnClickListener(new View.OnClickListener() {
@@ -138,6 +146,12 @@ public class TaskFragment extends Fragment {
         } else {
             Toast.makeText(getActivity(), "Error Opening Fab", Toast.LENGTH_SHORT).show();
         }
+    }
+    private void changeFragment(Fragment fragment){
+        getFragmentManager().beginTransaction()
+                .replace(R.id.fragmentContainerView,fragment,null)
+                .setReorderingAllowed(true).addToBackStack(null)
+                .commit();
     }
 
     private void displayTask(RecyclerView TaskRecyclerView) {
@@ -247,7 +261,6 @@ public class TaskFragment extends Fragment {
         /*Code for drop-down adapted from https://www.youtube.com/watch?v=KsprqXfugGQ&ab_channel=CubixSol*/
         dropdown_list = AddTaskDialog.findViewById(R.id.autocomplete_view); //Recycler view
         adapterCategoryList = new ArrayAdapter<String>(requireContext(), R.layout.dropdown_category_list, category_list); //each task.xml layout file.
-
         dropdown_list.setAdapter(adapterCategoryList);
         dropdown_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -264,8 +277,16 @@ public class TaskFragment extends Fragment {
                 date_picker.setText("Select Date");
             }
 
-            dropdown_list.setText(ediTask.getCategory());
-        String getPriority = ediTask.getPriority();
+            dropdown_list.setText(ediTask.getCategory(), false);
+           /* adapterCategoryList = new ArrayAdapter<String>(requireContext(), R.layout.dropdown_category_list, category_list); //each task.xml layout file.
+            dropdown_list.setAdapter(adapterCategoryList);
+            dropdown_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View v, int i, long l) {
+                    String category_list = adapterView.getItemAtPosition(i).toString();
+                }
+            });*/
+            String getPriority = ediTask.getPriority();
             if(getPriority != null){
                 switch (getPriority){
                     case("High"):
@@ -311,15 +332,23 @@ public class TaskFragment extends Fragment {
                 } else if (selectedPriority == R.id.LowBtn) {
                     priorityText = "Low";
                 }
-
+                int Check = 0;
+                int SessionCounts = 0;
                 if (taskText.isEmpty()) {
                     Toast.makeText(getContext(), "Task name is required", Toast.LENGTH_SHORT).show();
                 }else{
                         if (ediTask == null) {
-                            saveTask(taskText, date, categoriesText, priorityText);
+                            TaskModel taskModel = new TaskModel(taskText, priorityText, categoriesText, date , Check, SessionCounts);
+                            saveTask(taskModel);
                         } else {
-                            Log.d("EditTask", "Editing task with ID: " + ediTask.getId());
-                            EditTask(ediTask.getId(), taskText, date, categoriesText, priorityText);
+                            //Log.d("EditTask", "Editing task with ID: " + ediTask.getId());
+                            ediTask.setTask(taskText);
+                            ediTask.setPriority(priorityText);
+                            ediTask.setCategory(categoriesText);
+                            ediTask.setDate(date);
+                            ediTask.setIsChecked(Check);
+                            ediTask.setSessionCounts(SessionCounts);
+                            EditTask(ediTask.getId(), ediTask);
 
                         }
                 }
@@ -328,10 +357,10 @@ public class TaskFragment extends Fragment {
         AddTaskDialog.show();
     }
 
-    private void saveTask(String taskText, String date, String categoriesText, String priorityText) {
+    private void saveTask(TaskModel saveTask) {
         firestoredb = FirebaseFirestore.getInstance();
 
-        if (taskText.isEmpty()) {
+       /* if (taskText.isEmpty()) {
             Toast.makeText(getContext(), "Task name is required ", Toast.LENGTH_SHORT).show();
         } else {
             Map<String, Object> tasks = new HashMap<>();
@@ -341,15 +370,17 @@ public class TaskFragment extends Fragment {
             tasks.put("priority", priorityText);
             tasks.put("isChecked", 0);//changes to 1 when the task is checked.
             tasks.put("sessionCounts",0);
-
+*/
             LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
             if (LoggedUser != null) {
                 String loggedUserId = LoggedUser.getUid();
-
+                saveTask.setTaskId(null);
+                saveTask.setIsChecked(0);
+                saveTask.setSessionCounts(0);
                 firestoredb.collection("Task")
                         .document(loggedUserId)
                         .collection("LoggedUser Task")
-                        .add(tasks).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        .add(saveTask).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                             @Override
                             public void onComplete(@NonNull Task<DocumentReference> task) {
                                 if (task.isSuccessful()) {
@@ -364,14 +395,14 @@ public class TaskFragment extends Fragment {
                                 Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
-            }
+
 
         }
             //edit task save to firestore.
 
     }
 
-    private void EditTask( String id, String taskText, String date, String categoriesText, String priorityText){
+    private void EditTask( String id, TaskModel updateTask){
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
         TaskModel taskModel = new TaskModel();
         /*id = taskModel.getId();*/
@@ -380,7 +411,7 @@ public class TaskFragment extends Fragment {
             firestoredb.collection("Task").document(loggedUserId)
                     .collection("LoggedUser Task")
                     .document(id)
-                    .update("task",taskText, "date",date,"category",categoriesText,"priority",priorityText).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    .set(updateTask).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {

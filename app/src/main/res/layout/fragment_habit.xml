@@ -27,6 +27,24 @@
         android:scrollbarFadeDuration="@integer/material_motion_duration_long_2"
         app:layout_constraintTop_toBottomOf="@+id/dialogHeading" />
 
+    <TextView
+        android:id="@+id/habitTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:textStyle="bold"
+        android:textSize="15dp"
+        android:textColor="@color/button"
+        android:text="YEYY!! You have finished all your Habits Today!!"
+        android:drawableRight="@drawable/baseline_celebration_24"
+        android:drawableTint="@color/heading"
+
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/habitrecyclerView"
+
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton"
         android:layout_width="wrap_content"

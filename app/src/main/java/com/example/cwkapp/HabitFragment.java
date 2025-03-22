@@ -63,7 +63,7 @@ public class HabitFragment extends Fragment {
     private FloatingActionButton HabitFab;
     private EditText habit_text;
     //private TimePicker timePicker;
-    private TextView timePickerTextView;
+    private TextView timePickerTextView, successMsg;
     private MaterialButtonToggleGroup repeatBtnGrp;
     private Button saveBtn;
 
@@ -94,6 +94,7 @@ public class HabitFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle saveInstanceState) {
+        successMsg = view.findViewById(R.id.habitTextView);
         HabitFab = view.findViewById(R.id.floatingActionButton);
         if (HabitFab != null) {
             HabitFab.setOnClickListener(new View.OnClickListener() {
@@ -216,9 +217,9 @@ public class HabitFragment extends Fragment {
                 }
 
 
-                String currentDate = new SimpleDateFormat("dd/MM/yyyy",Locale.getDefault()).format(new Date());
+                currentDate = new SimpleDateFormat("dd/MM/yyyy",Locale.getDefault()).format(new Date());
                 List<String> completionDate = new ArrayList<>();
-                completionDate.add(currentDate);
+                //completionDate.add(currentDate);
 
                 if(habitText.isEmpty()){
                     Toast.makeText(getContext(), "Habit name is required", Toast.LENGTH_SHORT).show();
@@ -311,6 +312,7 @@ public class HabitFragment extends Fragment {
 
         firestoredb = FirebaseFirestore.getInstance();
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
+        currentDate = new SimpleDateFormat("dd/MM/yyyy",Locale.getDefault()).format(new Date());
 
         if (LoggedUser != null) {
             String loggedUserId = LoggedUser.getUid();
@@ -321,20 +323,33 @@ public class HabitFragment extends Fragment {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException error) {
                             if(snapshot!=null){
+                                int totalHabit = 0;
+                                int isCheckedCount =0;
                                 habitList = new ArrayList<>();
                                 for(DocumentSnapshot document: snapshot.getDocuments()){
-
+                                    totalHabit++;
                                     String id = document.getId();
                                     HabitModel habit = document.toObject(HabitModel.class);
                                     //Log.d("Firestore", "Habit Retrieved: " + habit.getHabit() + " | "
                                          //   + habit.getRepeatTime() + " | " + habit.getReminderTime()+ " | "+habit.getCurrrentDate());
                                     habit.setHabitId(id);
+                                    List<String>checkCompletedDate = habit.getCompletionDate();
+                                    if(checkCompletedDate !=null && checkCompletedDate.contains(currentDate)){
+                                        //habit.setChecked(true);
+                                        isCheckedCount++;
+                                    }
                                     habitList.add(habit);
-
                                     habitAdapter = new HabitAdapter(HabitFragment.this, habitList);
                                     HabitRecyclerView.setAdapter(habitAdapter);
                                     habitAdapter.notifyDataSetChanged();
                                     //Log.d("Firestore", "Habit Name retrieved: " + habit.getHabit());
+                                }
+                                if(isCheckedCount == totalHabit){
+                                    successMsg.setVisibility(View.VISIBLE);
+                                    //HabitRecyclerView.setVisibility(View.GONE);
+                                }else{
+                                    successMsg.setVisibility(View.GONE);
+                                    HabitRecyclerView.setVisibility(View.VISIBLE);
                                 }
                                 //Log.d("Firestore","Total Habit Retrieved: "+habitList.size());
                             }

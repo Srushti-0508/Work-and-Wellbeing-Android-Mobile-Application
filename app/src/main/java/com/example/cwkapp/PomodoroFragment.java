@@ -113,7 +113,7 @@ public class PomodoroFragment extends Fragment {
                 if(b){
                     TimerStart();
                     startAudio();
-                    istimerStarted = true;
+                    //istimerStarted = true;
 
                 }else{
                    Log.d("Timer","Timer is paused");
@@ -179,7 +179,7 @@ public class PomodoroFragment extends Fragment {
                     selectedTask = null;
                 }else{
                     selectedTask = taskList.get(i).getId();
-                    Log.d("Firestore","Selected task from the drop-down is: "+ selectedTask);
+                    //Log.d("Firestore","Selected task from the drop-down is: "+ selectedTask);
                 }
 
             }
@@ -201,7 +201,7 @@ private void selectTask(){
   if (LoggedUser != null) {
       String loggedUserId = LoggedUser.getUid();
 
-      firestoredb.collection("Task").document(loggedUserId).collection("LoggedUser Task")
+      firestoredb.collection("Task").document(loggedUserId).collection("LoggedUser Task").whereEqualTo("isChecked",0)
               .addSnapshotListener(new EventListener<QuerySnapshot>() {
                   @Override
                   public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -233,14 +233,17 @@ countDownTimer = new CountDownTimer(setTime, 1000) {
     }
 
     public void onFinish() {
+        countDownTimer.cancel();
         timer.setText("00:00");
         TimerToggleBtn.setChecked(false);
         SessionCompleted++;
         Notifications();
        // increment the completed session only if session(timer) is finished.
         completedSession();
+        retrieveSessionData();
         retrieveTaskSessionData();
-        updateTextView();
+        //updateTaskTextView();
+        //updateTextView();
 
         if(mediaPlayer !=null && mediaPlayer.isPlaying()){
             mediaPlayer.stop();

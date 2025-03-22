@@ -7,13 +7,21 @@
     tools:context=".TaskFragment"
     android:background="@color/white">
     <TextView
-        android:id="@+id/dialogHeading"
+        android:id="@+id/completedListHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Task Fragment"
+        android:background="@drawable/bg_nav_frame"
+        android:padding="8dp"
+        android:backgroundTint="@color/active_color"
+        android:textSize="15sp"
+        android:textColor="@color/heading"
+        android:drawableLeft="@drawable/habit"
+        android:drawableTint="@color/heading"
+        android:text="View Completed Task"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/taskrecyclerView"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:textAlignment="center"/>
 
@@ -21,7 +29,7 @@
         android:id="@+id/taskrecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/dialogHeading" />
+        app:layout_constraintTop_toBottomOf="@+id/completedListHeading" />
 
     <TextView
         android:id="@+id/CompletedTaskText"
@@ -62,6 +70,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/heading" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
