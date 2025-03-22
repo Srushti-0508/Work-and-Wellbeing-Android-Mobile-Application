@@ -1,12 +1,21 @@
 package com.example.cwkapp;
 
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.os.CountDownTimer;
@@ -85,7 +94,7 @@ public class PomodoroFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle saveInstanceState) {
-
+        NotificationChannel();
         TimerToggleBtn = view.findViewById(R.id.timerToggleBtn);
         sessionCountView =view.findViewById(R.id.SessionCountView);
         TaskSessionCountView = view.findViewById(R.id.TaskSessionCountView);
@@ -104,6 +113,7 @@ public class PomodoroFragment extends Fragment {
                 if(b){
                     TimerStart();
                     startAudio();
+                    istimerStarted = true;
 
                 }else{
                    Log.d("Timer","Timer is paused");
@@ -226,15 +236,17 @@ countDownTimer = new CountDownTimer(setTime, 1000) {
         timer.setText("00:00");
         TimerToggleBtn.setChecked(false);
         SessionCompleted++;
+        Notifications();
        // increment the completed session only if session(timer) is finished.
         completedSession();
         retrieveTaskSessionData();
-        //updateTextView();
-        istimerStarted = false;
+        updateTextView();
+
         if(mediaPlayer !=null && mediaPlayer.isPlaying()){
             mediaPlayer.stop();
             mediaPlayer.release();
         }
+        istimerStarted = false;
 
     }
 
@@ -397,5 +409,49 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
             mediaPlayer.start();
         }
     }
+
+    private void Notifications(){
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext(), "POMODORO_CHANNEL")
+                .setSmallIcon(R.drawable.notification)
+                .setContentTitle("Pomodoro Session Completed")
+                .setContentText("It's time for a short break!!")
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        NotificationManagerCompat manager = NotificationManagerCompat.from(getContext());
+        if(ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.POST_NOTIFICATIONS)!=
+        PackageManager.PERMISSION_GRANTED){
+        return;
+        }
+        manager.notify(1,builder.build());
+
+
+    }
+
+    private void NotificationChannel(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            if(Build.VERSION.SDK_INT >=33){
+                if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.POST_NOTIFICATIONS)!=
+                        PackageManager.PERMISSION_GRANTED){
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+                }
+            }
+            CharSequence name = "Pomodoro Channel";
+            String description = "This is Channel for Pomodoro Timers";
+            int important = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                channel = new NotificationChannel("POMODORO_CHANNEL", name, important);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                channel.setDescription(description);
+            }
+
+            NotificationManager manager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.createNotificationChannel(channel);
+
+        }
+    }
+
+
 
 }
