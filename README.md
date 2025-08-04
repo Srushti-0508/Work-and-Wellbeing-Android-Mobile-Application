@@ -1,10 +1,10 @@
 # 📱 Productivity App (Android + Firebase)
 
-A mobile productivity app built in **Java using Android Studio**, with full Firebase Firestore integration for authentication and real-time data management.
+Work and Wellbeing a mobile productivity app built in **Java using Android Studio**, with full Firebase Firestore integration for authentication and real-time data management.
 
 ---
 
-✨ Key Features
+##✨ Key Features
 
 - 🔐 **User Authentication**
   - Sign up, login, and logout using Firebase Email & Password authentication
@@ -13,7 +13,8 @@ A mobile productivity app built in **Java using Android Studio**, with full Fire
 - ✅ **Task Management**
   - Add, edit, and delete tasks
   - Mark tasks as completed — completed tasks move to a separate view
-  - Track session counts per task (used for Pomodoro analytics)
+  - Track session counts per task (used for Pomodoro and analytics)
+  - View task completion progress on Home Screen
 
 - 🔁 **Habit Tracking**
   - Create daily habits with auto-reset every new day
@@ -23,10 +24,10 @@ A mobile productivity app built in **Java using Android Studio**, with full Fire
 
 - ⏱️ **Pomodoro Timer**
   - Built-in 25-minute timer for focused work
+  - Select from a set of provided audio tracks (e.g., firecrackles, rain, nature sounds) for concentration during sessions
   - Optional task selection during sessions
-  - Session completion stored in SharedPreferences or linked to specific task
+  - Session completion stored in SharedPreferences or linked to specific task stored in firestore
   - Sends a notification when session ends
-  - Choose custom audio
 
 - 📊 **Analytics**
   - Bar chart showing Pomodoro sessions per task
@@ -79,9 +80,3 @@ The app is modularized into multiple fragments:
 - **MPAndroidChart** (for graphs and charts)
 
 ---
-
-## 🚀 Getting Started
-
-1. Clone the repository  
-   ```bash
-   git clone https://github.com/your-username/your-repo-name.git
