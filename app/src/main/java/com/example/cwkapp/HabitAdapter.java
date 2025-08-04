@@ -60,8 +60,8 @@ private Button confirm, cancel;
 
         String loggedUserId = LoggedUser.getUid();
         HabitModel habit = habitList.get(position);
-        //Log.d("Adapter","Habit from adapter: "+habit.getHabit()+" | Reminder: "+habit.getReminderTime() + " | Repeat: "+habit.getRepeatTime());
         String id = habit.getId();
+
         if(habit.getCompletionDate()!=null && habit.getCompletionDate().contains(currentDate)){
             vh.habitText.setChecked(true);
         }else{
@@ -84,9 +84,6 @@ private Button confirm, cancel;
                 }
             }
         });
-
-        //method for checking the habit, and adding the date to the db.
-        //Similarly to remove, Just like in task we are changing the values, here we need to store the date.
         vh.more_menu_img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,10 +94,9 @@ private Button confirm, cancel;
                    @Override
                    public boolean onMenuItemClick(MenuItem menuItem) {
                        if(menuItem.getItemId() == R.id.popup_edit){
-                           //Log.d("DEBUG","Habit to Edit: "+ habit.getHabit() + " | "+habit.getRepeatTime()+" | "+habit.getReminderTime());
                            habitFragment.AddHabit(habit);
-                       }else if(menuItem.getItemId() ==R.id.popup_delete){
 
+                       }else if(menuItem.getItemId() ==R.id.popup_delete){
                            Dialog ConfirmationDialog = new Dialog(habitFragment.getContext());
                            ConfirmationDialog.setContentView(R.layout.confirmation_dialog);
                            ConfirmationDialog.setCancelable(false);

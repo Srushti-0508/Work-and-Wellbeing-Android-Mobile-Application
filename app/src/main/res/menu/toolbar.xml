@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
+   <!-- <item
         android:id="@+id/toolbar_notification"
         android:icon="@drawable/notifications"
         android:title="Notification"
@@ -10,7 +10,7 @@
         android:id="@+id/toolbar_settings"
         android:icon="@drawable/settings"
         android:title="Settings"
-        app:showAsAction="always"/>
+        app:showAsAction="always"/>-->
     <item
         android:id="@+id/toolbar_logout"
         android:icon="@drawable/logout"

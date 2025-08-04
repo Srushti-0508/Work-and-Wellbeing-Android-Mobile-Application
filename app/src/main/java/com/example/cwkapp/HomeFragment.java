@@ -35,7 +35,10 @@ public class HomeFragment extends Fragment {
     private FirebaseUser LoggedUser;
     private FirebaseFirestore firestore;
 
-
+/** Displays an overview of the user's daily progress, including task and habit completion.
+  *  Retrieves and displays the number of completed tasks from Firestore.
+ *  Retrieves and displays the number of completed habits for the current day from Firestore.
+*/
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -52,6 +55,7 @@ public class HomeFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle saveInstanceState) {
         Date = view.findViewById(R.id.date);
@@ -61,19 +65,19 @@ public class HomeFragment extends Fragment {
         HabitCountsView =view.findViewById(R.id.HabitCount);
         Calendar calendar = Calendar.getInstance();
 
-        SimpleDateFormat date = new SimpleDateFormat("d");
+        SimpleDateFormat date = new SimpleDateFormat("d"); //retrieve date to display in Date TextView.
         String todayDate = date.format(calendar.getTime());
         Date.setText(todayDate);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEEE", Locale.getDefault());
+        SimpleDateFormat day = new SimpleDateFormat("EEEE", Locale.getDefault()); //retrieve just day
         String todayDay = day.format(calendar.getTime()).toUpperCase();
         Day.setText(todayDay);
 
-        SimpleDateFormat MonthYear = new SimpleDateFormat("MMMM YYYY");
+        SimpleDateFormat MonthYear = new SimpleDateFormat("MMMM YYYY"); //retrieve month name and year
         String CurrentMonthYear = MonthYear.format(calendar.getTime());
         MonthnYear.setText(CurrentMonthYear.toUpperCase());
-        showTodayTask();
-        showHabits();
+        showTodayTask(); //display total number of task set for today.
+        showHabits(); //display completion count of habits.
     }
 
     private void showTodayTask() {
@@ -86,27 +90,18 @@ public class HomeFragment extends Fragment {
             String loggedUserId = LoggedUser.getUid();
             firestore.collection("Task")
                     .document(loggedUserId)
-                    .collection("LoggedUser Task").whereEqualTo("date",TaskDate)
+                    .collection("LoggedUser Task")
+
+                    .whereEqualTo("date",TaskDate)
+                    .whereEqualTo("isChecked",0)
+
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                                int TaskCount = value.size();
-                                TaskCountsView.setText(String.valueOf(TaskCount));
-                                TaskCountsView.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                                        TaskFragment taskFragment = new TaskFragment();
-                                        fragmentTransaction.replace(R.id.fragmentContainerView, taskFragment);
-                                        fragmentTransaction.addToBackStack(null);
-                                        fragmentTransaction.commit();
-
-                                    }
-                                });
-
+                                int TaskCount = value.size(); //retrieve documents size
+                                TaskCountsView.setText("" + TaskCount); //setting the value as string
                         }
                     });
-
         }
     }
 
@@ -120,21 +115,30 @@ public class HomeFragment extends Fragment {
             String loggedUserId = LoggedUser.getUid();
             firestore.collection("Habit")
                     .document(loggedUserId)
-                    .collection("LoggedUser Habit").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    .collection("LoggedUser Habit")
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                            if (error != null) {
+                                Log.w("Firestore", "Listen failed.", error);
+                                return;
+                            }
+                            if (value == null) {
+                                Log.w("Firestore", "QuerySnapshot is null.");
+                                return;
+                            }
                             int totalHabit = 0;
                             int finishedHabit = 0;
                             for(DocumentSnapshot doc: value.getDocuments()){
-                                totalHabit++;
+                                totalHabit++; //increments by 1 on each loop
                                 HabitModel habit = doc.toObject(HabitModel.class);
-                                List<String> finishHabitDate =  (List<String>) habit.getCompletionDate();
+                                List<String> finishHabitDate =  (List<String>) habit.getCompletionDate(); //retrieve and store the completion dates in new list
                                 if(finishHabitDate !=null && finishHabitDate.contains(HabitDate)){
-                                    finishedHabit++;
+                                    finishedHabit++; // increments by 1
                                 }
                             }
                             if(totalHabit == 0){
-                                HabitCountsView.setText("0/0");
+                                HabitCountsView.setText("0/0"); //initially set the habit count as 0/0 if no habit is being completed.
                             }else{
                                 HabitCountsView.setText(finishedHabit +" / "+ totalHabit);
                             }

@@ -64,9 +64,9 @@ import java.util.TimeZone;
 
 public class TaskFragment extends Fragment {
     private FirebaseFirestore firestoredb;
-    /*private RecyclerView TaskRecyclerView;*/
     private FirebaseAuth Auth;
     private FirebaseUser LoggedUser;
+
     private String[] category_list = {"General", "Work", "Study", "Home"};
     private String date, priorityText;
     private ArrayAdapter<String> adapterCategoryList, adapterCompletedTask;
@@ -75,7 +75,7 @@ public class TaskFragment extends Fragment {
     private AutoCompleteTextView dropdown_list;
     private FloatingActionButton taskFab;
     private Button saveBtn;
-    //private MaterialButton high, medium, low;
+
     private EditText task_text;
     private TextView date_picker, completedListTextView;
     private TextInputLayout dropdown;
@@ -99,35 +99,15 @@ public class TaskFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_task, container, false);
-        RecyclerView TaskRecyclerView = root.findViewById(R.id.taskrecyclerView);
-        TaskRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        RecyclerView TaskRecyclerView = root.findViewById(R.id.taskrecyclerView); //initialise Recycler View
+        TaskRecyclerView.setLayoutManager(new LinearLayoutManager(getContext())); //display item vertically aligned
         displayTask(TaskRecyclerView);
 
-        /*RecyclerView CompletedTaskRV = root.findViewById(R.id.completedTaskRV);
-        CompletedTaskRV.setLayoutManager(new LinearLayoutManager(getContext()));
-        displayCompletedTask(CompletedTaskRV);*/
-
-        completedTaskLV = root.findViewById(R.id.completedTaskLV);
-        completedTaskList = new ArrayList<>();
-        adapterCompletedTask = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, completedTaskList);
-        completedTaskLV.setAdapter(adapterCompletedTask);
-        displayCompletedTask();
         return root;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle saveInstanceState) {
-
-        /*TaskRecyclerView = view.findViewById(R.id.taskrecyclerView);
-        TaskRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext())); //will display all the task in vertical list.
-        TaskRecyclerView.setHasFixedSize(true);*/
-
-        /*taskList = new ArrayList<>();*/
-
-       /* taskAdapter = new TaskAdapter(requireContext(),taskList);
-
-        TaskRecyclerView.setAdapter(taskAdapter);
-        displayTask();*/
         completedListTextView = view.findViewById(R.id.completedListHeading);
         completedListTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,6 +115,7 @@ public class TaskFragment extends Fragment {
                 changeFragment(new CompletedTaskFragment());
             }
         });
+
         taskFab = view.findViewById(R.id.floatingActionButton3);
         if (taskFab != null) {
             taskFab.setOnClickListener(new View.OnClickListener() {
@@ -147,81 +128,20 @@ public class TaskFragment extends Fragment {
             Toast.makeText(getActivity(), "Error Opening Fab", Toast.LENGTH_SHORT).show();
         }
     }
+
     private void changeFragment(Fragment fragment){
         getFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainerView,fragment,null)
                 .setReorderingAllowed(true).addToBackStack(null)
                 .commit();
     }
-
-    private void displayTask(RecyclerView TaskRecyclerView) {
-        firestoredb = FirebaseFirestore.getInstance();
-        LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (LoggedUser != null) {
-            String loggedUserId = LoggedUser.getUid();
-
-           firestoredb.collection("Task")
-                    .document(loggedUserId)
-                    .collection("LoggedUser Task").whereEqualTo("isChecked",0)
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException error) {
-                    if (snapshot!= null) {
-                        //ArrayList<TaskModel>taskList = new ArrayList<>();
-                        taskList = new ArrayList<>();
-                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                            String id = doc.getId();
-                            TaskModel taskModel = doc.toObject(TaskModel.class);
-                            taskModel.setTaskId(id);
-                            taskList.add(taskModel);
-                            taskAdapter = new TaskAdapter(TaskFragment.this, taskList);
-                            TaskRecyclerView.setAdapter(taskAdapter);
-                            taskAdapter.notifyDataSetChanged();
-                            Log.d("Firestore", "Task Name retrieved: " + taskModel.getTask());
-                        }
-
-                        Log.d("Firestore", "Total Tasks Retrieved: " + taskList.size());
-                        /*Collections.reverse(taskList);*/
-                        /*taskAdapter.updateTaskAdapter(updateList);*/
-                    }
-                }
-
-            });
-        }
-    }
-           /*tasksRef.get().addOnCompleteListener(task -> {
-                       if (task.isSuccessful()) {
-                           taskList = new ArrayList<>();
-                           for (QueryDocumentSnapshot doc : task.getResult()) {
-                               TaskModel taskModel = doc.toObject(TaskModel.class);
-                               taskModel.setTaskId(doc.getId());
-                               taskList.add(taskModel);
-                           }
-                           taskAdapter = new TaskAdapter(getContext(),taskList);
-
-                           TaskRecyclerView.setAdapter(taskAdapter);
-                       }
-                   });*/
-
-
-
-                    /*.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                            for (DocumentChange docChange : value.getDocumentChanges()) {
-                                if (docChange.getType() == DocumentChange.Type.ADDED) {
-                                    String id = docChange.getDocument().getId();
-                                    TaskModel taskModel = docChange.getDocument().toObject(TaskModel.class);
-                                    taskModel.setTaskId(id);
-                                    taskList.add(taskModel);
-                                    taskAdapter.notifyDataSetChanged();
-
-                                }
-                            }
-                            Collections.reverse(taskList);
-                        }
-                    });*/
+    /**
+     * Opens a custom dialog to add a new task or edit an existing task.
+     * The dialog allows users to input task details including name, priority, category, and due date.
+     * If a task is passed in as a parameter, the dialog will pre-fill the fields for editing.
+     *
+     * param ediTask- The task to be edited. If null, a new task will be created.
+     */
 
     public void AddTask(@Nullable TaskModel ediTask) {
         final Dialog AddTaskDialog = new Dialog(getContext());
@@ -229,14 +149,12 @@ public class TaskFragment extends Fragment {
         /*enable to tap outside the dialog box to close it*/
         AddTaskDialog.setCancelable(true);
 
-        /*final TextView dialog_heading = AddTaskDialog.findViewById(R.id.dialogHeading);*/
+        //UI components
         task_text = AddTaskDialog.findViewById(R.id.textInputEditText);
         priorityBtnGrp = AddTaskDialog.findViewById(R.id.priorityBtn);
         saveBtn = AddTaskDialog.findViewById(R.id.saveBtn);
-       /* high = AddTaskDialog.findViewById(R.id.HighBtn);
-        medium = AddTaskDialog.findViewById(R.id.MediumBtn);
-        low = AddTaskDialog.findViewById(R.id.LowBtn);*/
-        /*Date Picker Code Adapted from https://abhiandroid.com/ui/datepicker#gsc.tab=0*/
+
+        /*Code Adapted from https://abhiandroid.com/ui/datepicker#gsc.tab=0*/
         date_picker = AddTaskDialog.findViewById(R.id.date);
         date_picker.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -250,44 +168,38 @@ public class TaskFragment extends Fragment {
                     @Override
                     public void onDateSet(DatePicker view, int y, int m, int d) {
                         date_picker.setText(d + "/" + (m + 1) + "/" + y);
-                        date = d + "/" + (m + 1) + "/" + y;
+                        date = d + "/" + (m + 1) + "/" + y; //save selected date
                     }
                 }, year, month, day);
                 datePicker.show();
             }
         });
 
+        // Set up the task category dropdown using AutoCompleteTextView and ArrayAdapter
         dropdown = AddTaskDialog.findViewById(R.id.dropdown);
-        /*Code for drop-down adapted from https://www.youtube.com/watch?v=KsprqXfugGQ&ab_channel=CubixSol*/
         dropdown_list = AddTaskDialog.findViewById(R.id.autocomplete_view); //Recycler view
         adapterCategoryList = new ArrayAdapter<String>(requireContext(), R.layout.dropdown_category_list, category_list); //each task.xml layout file.
         dropdown_list.setAdapter(adapterCategoryList);
         dropdown_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View v, int i, long l) {
-                String category_list = adapterView.getItemAtPosition(i).toString();
+                String category_list = adapterView.getItemAtPosition(i).toString(); //get the category name based on the position to display it in autocomplete view
             }
         });
-
+        // If editing an existing task, populate the dialog fields with current values
         if(ediTask != null){
             task_text.setText(ediTask.getTask());
+
             if(ediTask.getDate()!=null){
-                date_picker.setText(ediTask.getDate());
+                date_picker.setText(ediTask.getDate()); //if date is not saved, it set the title of the TextView
             }else{
                 date_picker.setText("Select Date");
             }
 
-            dropdown_list.setText(ediTask.getCategory(), false);
-           /* adapterCategoryList = new ArrayAdapter<String>(requireContext(), R.layout.dropdown_category_list, category_list); //each task.xml layout file.
-            dropdown_list.setAdapter(adapterCategoryList);
-            dropdown_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View v, int i, long l) {
-                    String category_list = adapterView.getItemAtPosition(i).toString();
-                }
-            });*/
-            String getPriority = ediTask.getPriority();
+            dropdown_list.setText(ediTask.getCategory(), false); //to show category drop-down list also during edit.
+            String getPriority = ediTask.getPriority();  //get the priority level and checks the button
             if(getPriority != null){
+                //check the appropriate priority button
                 switch (getPriority){
                     case("High"):
                         priorityBtnGrp.check(R.id.HighBtn);
@@ -298,23 +210,11 @@ public class TaskFragment extends Fragment {
                     case"Low":
                         priorityBtnGrp.check(R.id.LowBtn);
                         break;
-
                 }
             }else{
-                priorityBtnGrp.clearChecked();
+                priorityBtnGrp.clearChecked(); //keep it unchecked if no priority level is saved.
             }
             saveBtn.setText("Update Task");
-
-                /*priorityBtnGrp.clearChecked();
-            }
-            if(ediTask.getPriority().equals("High")){
-                priorityBtnGrp.check(R.id.HighBtn);
-            }else if(ediTask.getPriority().equals("Medium")){
-                priorityBtnGrp.check(R.id.MediumBtn);
-            }else if(ediTask.getPriority().equals("Low")){
-                priorityBtnGrp.check(R.id.LowBtn);
-            }*/
-
         }
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
@@ -323,7 +223,8 @@ public class TaskFragment extends Fragment {
                 String taskText = task_text.getText().toString();
                 String categoriesText = dropdown_list.getText().toString();
 
-                int selectedPriority = priorityBtnGrp.getCheckedButtonId();
+                int selectedPriority = priorityBtnGrp.getCheckedButtonId(); //to save the priority level as string in document,
+                //getting the checked Button ID and setting the priority text accordingly
 
                 if (selectedPriority == R.id.HighBtn) {
                     priorityText = "High";
@@ -332,51 +233,43 @@ public class TaskFragment extends Fragment {
                 } else if (selectedPriority == R.id.LowBtn) {
                     priorityText = "Low";
                 }
-                int Check = 0;
-                int SessionCounts = 0;
+
+                int Check = 0; //default unchecked status
+                int SessionCounts = 0; //default session count
+
                 if (taskText.isEmpty()) {
                     Toast.makeText(getContext(), "Task name is required", Toast.LENGTH_SHORT).show();
                 }else{
-                        if (ediTask == null) {
-                            TaskModel taskModel = new TaskModel(taskText, priorityText, categoriesText, date , Check, SessionCounts);
-                            saveTask(taskModel);
-                        } else {
-                            //Log.d("EditTask", "Editing task with ID: " + ediTask.getId());
-                            ediTask.setTask(taskText);
-                            ediTask.setPriority(priorityText);
-                            ediTask.setCategory(categoriesText);
-                            ediTask.setDate(date);
-                            ediTask.setIsChecked(Check);
-                            ediTask.setSessionCounts(SessionCounts);
-                            EditTask(ediTask.getId(), ediTask);
-
-                        }
+                    if (ediTask == null) {
+                        //create and save new task
+                        TaskModel taskModel = new TaskModel(taskText, priorityText, categoriesText, date , Check, SessionCounts);
+                        saveTask(taskModel);
+                        AddTaskDialog.dismiss();
+                    } else {
+                        //Log.d("EditTask", "Editing task with ID: " + ediTask.getId());
+                        //update existing task
+                        ediTask.setTask(taskText);
+                        ediTask.setPriority(priorityText);
+                        ediTask.setCategory(categoriesText);
+                        ediTask.setDate(date);
+                        ediTask.setIsChecked(Check);
+                        ediTask.setSessionCounts(SessionCounts);
+                        EditTask(ediTask.getId(), ediTask);
+                        AddTaskDialog.dismiss();
+                    }
                 }
             }
         });
-        AddTaskDialog.show();
+        AddTaskDialog.show(); //display the dialog
     }
-
     private void saveTask(TaskModel saveTask) {
         firestoredb = FirebaseFirestore.getInstance();
-
-       /* if (taskText.isEmpty()) {
-            Toast.makeText(getContext(), "Task name is required ", Toast.LENGTH_SHORT).show();
-        } else {
-            Map<String, Object> tasks = new HashMap<>();
-            tasks.put("task", taskText);
-            tasks.put("date", date);
-            tasks.put("category", categoriesText);
-            tasks.put("priority", priorityText);
-            tasks.put("isChecked", 0);//changes to 1 when the task is checked.
-            tasks.put("sessionCounts",0);
-*/
             LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
             if (LoggedUser != null) {
                 String loggedUserId = LoggedUser.getUid();
                 saveTask.setTaskId(null);
-                saveTask.setIsChecked(0);
-                saveTask.setSessionCounts(0);
+                saveTask.setIsChecked(0); //to initially save the task as unchecked.
+                saveTask.setSessionCounts(0); //initially save task Session count as 0
                 firestoredb.collection("Task")
                         .document(loggedUserId)
                         .collection("LoggedUser Task")
@@ -395,22 +288,17 @@ public class TaskFragment extends Fragment {
                                 Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
-
-
         }
-            //edit task save to firestore.
-
     }
 
-    private void EditTask( String id, TaskModel updateTask){
+    private void EditTask(String id, TaskModel updateTask){
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
         TaskModel taskModel = new TaskModel();
-        /*id = taskModel.getId();*/
         if (LoggedUser != null) {
             String loggedUserId = LoggedUser.getUid();
             firestoredb.collection("Task").document(loggedUserId)
                     .collection("LoggedUser Task")
-                    .document(id)
+                    .document(id)//setting Document ID so it only updates the selected saved task document.
                     .set(updateTask).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -423,8 +311,7 @@ public class TaskFragment extends Fragment {
                     });
         }
     }
-
-    private void displayCompletedTask(){
+    private void displayTask(RecyclerView TaskRecyclerView) { //display all the unchecked/newly set tasks
         firestoredb = FirebaseFirestore.getInstance();
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -433,28 +320,31 @@ public class TaskFragment extends Fragment {
 
             firestoredb.collection("Task")
                     .document(loggedUserId)
-                    .collection("LoggedUser Task").whereEqualTo("isChecked",1)
+                    .collection("LoggedUser Task")
+                    .whereEqualTo("isChecked",0)
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
-                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                            if(value!=null){
-                                for(DocumentSnapshot doc: value.getDocuments()){
-                                    String id = doc.getId();
-                                    //TaskModel completedTask = doc.toObject(TaskModel.class);
-                                    //completedTask.setTaskId(id);
-                                    String taskName = String.valueOf(doc.get("task"));
-                                    //completedTask.setTask(taskName);
-                                    completedTaskList.add(taskName);
-                                    adapterCompletedTask.notifyDataSetChanged();
+                        public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                            if (snapshot!= null) {
+
+                                taskList = new ArrayList<>();
+                                for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                                    String id = doc.getId(); //getting document ID
+                                    TaskModel taskModel = doc.toObject(TaskModel.class);
+                                    taskModel.setTaskId(id);
+                                    taskList.add(taskModel);
+                                    taskAdapter = new TaskAdapter(TaskFragment.this, taskList);
+                                    TaskRecyclerView.setAdapter(taskAdapter);
+                                    taskAdapter.notifyDataSetChanged();
+                                    Log.d("Firestore", "Task Name retrieved: " + taskModel.getTask());
                                 }
+
+                                Log.d("Firestore", "Total Tasks Retrieved: " + taskList.size());
+
                             }
-
                         }
+
                     });
-
-
         }
     }
-
-
 }

@@ -7,20 +7,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.firestore.Exclude;
 
 public class TaskModel {
-        //store Firestore doc Id to edit or delete the task.
-
     private String task, priority, category, date;
     private int isChecked, sessionCounts;
 
     public TaskModel() {
     }
 
-    @Exclude              //avoid storing TaskId inside the Firestore doc.
-    private String id;
+    @Exclude              //avoid storing TaskId inside the Firestore document
+    private String id;    //store Firestore doc Id to edit or delete the task.
 
 
     public TaskModel(String task, String priority, String category, String date, int isChecked, int sessionCounts) {
-        /*this.id = id;*/
         this.task = task;
         this.priority = priority;
         this.category = category;
@@ -54,9 +51,8 @@ public class TaskModel {
         this.sessionCounts = sessionCounts;
     }
 
-
     @Exclude
-    public String getId() {return id;}
+    public String getId() {return id;}  //excluding the ID field in the getter method
     public void setTaskId(String taskId) {
         this.id = taskId;
     }

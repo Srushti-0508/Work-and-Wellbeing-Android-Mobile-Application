@@ -23,10 +23,16 @@ public class CompletedTaskAdapter extends RecyclerView.Adapter<CompletedTaskAdap
     private ArrayList<TaskModel> CompletedTaskList;
     private FirebaseFirestore db;
 
+   /** Displays completed tasks in a separate fragment for better task management and decluttering.
+    * Automatically shows tasks marked as "checked" (completed) from Firestore.
+    * Provides with the option to permanently delete completed tasks.
+    * */
+
     public CompletedTaskAdapter(CompletedTaskFragment completedTaskFragment, ArrayList<TaskModel> CompletedTaskList){
         this.CompletedTaskList = CompletedTaskList;
         this.completedTaskFragment = completedTaskFragment;
     }
+
 
     @NonNull
     @Override

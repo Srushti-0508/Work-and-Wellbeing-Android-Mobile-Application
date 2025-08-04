@@ -26,11 +26,13 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
 private FirebaseAuth authorization;
-    @Override
+
+@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
         authorization = FirebaseAuth.getInstance();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -38,12 +40,13 @@ private FirebaseAuth authorization;
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        Button moveToLogin = findViewById(R.id.MoveToLoginBtn);
+        Button moveToLogin = findViewById(R.id.MoveToLoginBtn); //redirect users to login activity.
         moveToLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, LoginController.class);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -52,24 +55,22 @@ private FirebaseAuth authorization;
     @Override
     public void onStart(){
         super.onStart();
-        FirebaseUser currentUser = authorization.getCurrentUser();
+        FirebaseUser currentUser = authorization.getCurrentUser(); //checks if user is logged in on the start and skip the login screen if they are.
         if(currentUser !=null){
-            //redirect to the app
-            OpenDashboard();
+            OpenDashboard(); //redirect to the home
         }
     }
 
     public void register(String email, String password){
+    //create new account using email and password.
         authorization.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()) {
                             Log.d("MainActivity", "createUserWithEmail:success");
-
                             FirebaseUser user = authorization.getCurrentUser();
                             Toast.makeText(MainActivity.this, "Authentication Success.", Toast.LENGTH_SHORT).show();
-                            //use an Intent to move to next activity.
-                            OpenDashboard();
+                            OpenDashboard(); //direct to dashboard if authentication is successful.
                         }
                         else{
                             Log.w("MainActivity", "createUserWithEmail:failure",task.getException());
@@ -84,9 +85,18 @@ private FirebaseAuth authorization;
         EditText Password  = findViewById(R.id.password);
         String username = Username.getText().toString();
         String password = Password.getText().toString();
-        register(username,password);
+
+        if(username.isEmpty()){
+            Username.setError("Please Enter Email"); //set error message in ediText
+        }
+        if(password.isEmpty()){
+            Password.setError("Enter Password");
+        }else {
+            register(username, password);
+        }
+
     }
-    private void OpenDashboard(){
+    private void OpenDashboard(){  //Intent to move to next activity.
         Intent intent = new Intent(MainActivity.this, Dashboard.class);
         startActivity(intent);
         finish();

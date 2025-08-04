@@ -57,29 +57,40 @@ import java.util.Set;
 
 public class PomodoroFragment extends Fragment {
     private CountDownTimer countDownTimer;
-    private long setTime = 10 * 1000;
     private ToggleButton TimerToggleBtn;
     private TextView sessionCountView, TaskSessionCountView;
     private Button resetTimerBtn, selectAudioBtn;
     private Chronometer timer;
+    private long setTime = 25 * 60 * 1000;  // in milliseconds
     private boolean istimerStarted = false;
-    private String selectedTask = null;
+
     private MediaPlayer mediaPlayer;
     private int SessionCompleted = 0, selectedAudioId = -1;
     private Long SessionCount;
+
     private FirebaseFirestore firestoredb;
     private FirebaseAuth Auth;
     private FirebaseUser LoggedUser;
+
     private TextInputLayout dropdown;
     private AutoCompleteTextView taskDropDown_list;
     private ArrayList<TaskModel> taskList = new ArrayList<>();
-    private ArrayList<String> taskName = new ArrayList<>();  //list to store the task name
+    private ArrayList<String> taskNameList = new ArrayList<>();  //list to store the task name
     private ArrayAdapter<String> taskSelectionList;
+    private String selectedTask = null;
 
     public PomodoroFragment() {
         // Required empty public constructor
     }
-
+    /**
+     * Handles Pomodoro sessions with a default duration of 25 minutes.
+     * Users can choose a specific task to associate the session with, or run sessions independently without selecting a task.
+     * Also allows selection of custom session audio.
+     *
+     * Retrieves and manages session counts from both SharedPreferences (for general sessions)
+     * and Firestore (for task-based sessions).
+     * Sends a notification to the user when the Pomodoro timer ends.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,69 +103,42 @@ public class PomodoroFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_pomodoro, container, false);
     }
 
+
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle saveInstanceState) {
         NotificationChannel();
-        TimerToggleBtn = view.findViewById(R.id.timerToggleBtn);
         sessionCountView =view.findViewById(R.id.SessionCountView);
         TaskSessionCountView = view.findViewById(R.id.TaskSessionCountView);
-        retrieveSessionData();
-
-        updateTextView();
-        timer = view.findViewById(R.id.chronometer);
-        resetTimerBtn = view.findViewById(R.id.resetTimer);
-        timer.setText("25:00");
+        retrieveSessionData(); // to always retrieve the shared preferences Session count on fragment creation.
+        updateTextView();  // and display it in TextView.
+        TimerToggleBtn = view.findViewById(R.id.timerToggleBtn); //start and pause option
         TimerToggleBtn.setText(null);
         TimerToggleBtn.setTextOn(null);
         TimerToggleBtn.setTextOff(null);
         TimerToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b){
+                if(b){ //checks toggle button state if true start the timer.
                     TimerStart();
                     startAudio();
-                    //istimerStarted = true;
-
                 }else{
-                   Log.d("Timer","Timer is paused");
-                    countDownTimer.cancel();
-                    istimerStarted = false;
+                    countDownTimer.cancel(); //pause the timer
+                    istimerStarted = false; //set the timer state to false(stop timer).
 
-                    if(mediaPlayer !=null && mediaPlayer.isPlaying()){
-                    mediaPlayer.pause();
-                }
+                    if(mediaPlayer != null && mediaPlayer.isPlaying()){  //to ensure that the audio is stopped along with the timer.
+                        mediaPlayer.pause();
+                    }
 
                 }
             }
         });
-
-
-
-    /*.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean Boolean) {
-                if(Boolean){
-                    //startAudio();
-                    TimerStart();
-                }else{//pause the timer
-                        countDownTimer.cancel();
-                        istimerStarted = false;
-                //pause music
-                    *//*if(mediaPlayer !=null && mediaPlayer.isPlaying()){
-                        mediaPlayer.pause();
-                    }*//*
-                }
-            }
-        });*/
-
+        resetTimerBtn = view.findViewById(R.id.resetTimer); //reset timer button
         resetTimerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                countDownTimer.cancel();
-                setTime = 10 * 1000;
-                /*int min = (int) (25 * 60 * 1000 / 1000) / 60;
-                int sec = (int) (25 * 60 * 1000 / 1000) % 60;
-                timer.setText(String.format(Locale.getDefault(), "%02d:%02d", min, sec));*/
+                countDownTimer.cancel();  //
+                setTime = 25 * 60 * 1000; //set the timer back to 25 min
                 timer.setText("25:00");
                 TimerToggleBtn.setChecked(false);
                 istimerStarted = false;
@@ -162,26 +146,6 @@ public class PomodoroFragment extends Fragment {
                     mediaPlayer.stop();
                     mediaPlayer.release();
                 }
-
-            }
-        });
-
-        dropdown = view.findViewById(R.id.dropdown);
-        taskDropDown_list = view.findViewById(R.id.autocomplete_view);
-        taskSelectionList = new ArrayAdapter<>(requireContext(), R.layout.dropdown_category_list, taskName);
-        taskDropDown_list.setAdapter(taskSelectionList);
-        selectTask();
-        taskDropDown_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String taskName = adapterView.getItemAtPosition(i).toString();
-                if(i == 0){
-                    selectedTask = null;
-                }else{
-                    selectedTask = taskList.get(i).getId();
-                    //Log.d("Firestore","Selected task from the drop-down is: "+ selectedTask);
-                }
-
             }
         });
         selectAudioBtn = view.findViewById(R.id.selectAudio);
@@ -192,71 +156,86 @@ public class PomodoroFragment extends Fragment {
             }
         });
 
+        timer = view.findViewById(R.id.chronometer);
+        timer.setText("25:00");
+
+        dropdown = view.findViewById(R.id.dropdown);
+        taskDropDown_list = view.findViewById(R.id.autocomplete_view);
+        taskSelectionList = new ArrayAdapter<>(requireContext(), R.layout.dropdown_category_list, taskNameList);
+        taskDropDown_list.setAdapter(taskSelectionList);
+
+        selectTask();
+        taskDropDown_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String taskName = adapterView.getItemAtPosition(i).toString();
+                if(i == 0){
+                    selectedTask = null;
+                }else{
+                    selectedTask = taskList.get(i).getId();
+                }
+
+            }
+        });
     }
+    private void selectTask(){
+        firestoredb = FirebaseFirestore.getInstance();  //retrieving the task names into the drop-down list.
+        LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (LoggedUser != null) {
+            String loggedUserId = LoggedUser.getUid();
 
-private void selectTask(){
+            firestoredb.collection("Task").document(loggedUserId)
+                    .collection("LoggedUser Task")
+                    .whereEqualTo("isChecked",0)//only pull unchecked task.
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                            if (value != null) {
+                                for (DocumentSnapshot doc : value.getDocuments()) {
+                                    String id = doc.getId();
+                                    TaskModel taskModel = doc.toObject(TaskModel.class);
+                                    taskModel.setTaskId(id);
+                                    taskList.add(taskModel);
+                                    taskNameList.add(taskModel.getTask());
+                                    //task name
+                                }
+                                taskSelectionList.notifyDataSetChanged();
 
-  firestoredb = FirebaseFirestore.getInstance();  //retreving the task names into the drop-down list.
-  LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
-  if (LoggedUser != null) {
-      String loggedUserId = LoggedUser.getUid();
+                            }
+                        }
+                    });
 
-      firestoredb.collection("Task").document(loggedUserId).collection("LoggedUser Task").whereEqualTo("isChecked",0)
-              .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                  @Override
-                  public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                      if (value != null) {
-                          for (DocumentSnapshot doc : value.getDocuments()) {
-                              String id = doc.getId();
-                              TaskModel taskModel = doc.toObject(TaskModel.class);
-                              taskModel.setTaskId(id);
-                              taskList.add(taskModel);
-                              taskName.add(taskModel.getTask());
-                              //task name
-                          }
-                          taskSelectionList.notifyDataSetChanged();
-
-                      }
-                  }
-              });
-
-  }
-}
-
-private void TimerStart() {
-countDownTimer = new CountDownTimer(setTime, 1000) {
-    public void onTick(long timeUntilFinish) {
-        setTime = timeUntilFinish;
-        int min = (int) (timeUntilFinish / 1000) / 60;
-        int sec = (int) (timeUntilFinish / 1000) % 60;
-        timer.setText(String.format("%02d:%02d", min, sec));//display the time in two digits
-    }
-
-    public void onFinish() {
-        countDownTimer.cancel();
-        timer.setText("00:00");
-        TimerToggleBtn.setChecked(false);
-        SessionCompleted++;
-        Notifications();
-       // increment the completed session only if session(timer) is finished.
-        completedSession();
-        retrieveSessionData();
-        retrieveTaskSessionData();
-        //updateTaskTextView();
-        //updateTextView();
-
-        if(mediaPlayer !=null && mediaPlayer.isPlaying()){
-            mediaPlayer.stop();
-            mediaPlayer.release();
         }
-        istimerStarted = false;
-
     }
 
-}.start();
-istimerStarted = true;
-}
+    private void TimerStart() {
+        countDownTimer = new CountDownTimer(setTime, 1000) { //set the countdown interval to 1 sec
+            public void onTick(long timeUntilFinish) {
+                setTime = timeUntilFinish;  // to prevent resetting countdown.
+                int min = (int) (timeUntilFinish / 1000) / 60;
+                int sec = (int) (timeUntilFinish / 1000) % 60;
+                timer.setText(String.format("%02d:%02d", min, sec));//display the time in two digits format
+            }
 
+            public void onFinish() {
+                countDownTimer.cancel();
+                timer.setText("00:00");
+                TimerToggleBtn.setChecked(false);
+                SessionCompleted++; // increment the completed session only if session(timer) is finished.
+                Notifications();
+                completedSession();
+                retrieveSessionData();
+                retrieveTaskSessionData();
+                if(mediaPlayer !=null && mediaPlayer.isPlaying()){
+                    mediaPlayer.stop();
+                    mediaPlayer.release();
+                }
+                istimerStarted = false;
+            }
+
+        }.start();
+        istimerStarted = true;
+    }
 
 private void completedSession() {
     if(selectedTask!=null) {
@@ -275,47 +254,33 @@ private void completedSession() {
         } else {
             SharedPreferences sharedPreferences = getActivity().getSharedPreferences("PomodoroSessions", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt("Session Counts", SessionCompleted);
+            editor.putInt("Session Counts", SessionCompleted); //writing the completed session count
             editor.apply();
         }
     }
 
 
-private void retrieveTaskSessionData() { //retrieve the session data stored in sharedpreferences.
+private void retrieveTaskSessionData() { //retrieve the session data stored in firestore.
     if (selectedTask != null) {
         firestoredb = FirebaseFirestore.getInstance();
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
         if (LoggedUser != null) {
             String loggedUserId = LoggedUser.getUid();
-            firestoredb.collection("Task").document(loggedUserId).collection("LoggedUser Task").document(selectedTask).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            firestoredb.collection("Task").document(loggedUserId).collection("LoggedUser Task")
+                    .document(selectedTask).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
                     SessionCount = documentSnapshot.getLong("sessionCounts");
                     Log.d("FireStore", "no.of task sessions: " + SessionCount);
                     updateTaskTextView();
-                    //TaskSessionCountView.setText("Task Session Count: " + SessionCount);
                 }
             });
-                    /*.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                            if (value != null) {
-                                for (DocumentSnapshot doc : value.getDocuments()) {
-                                    selectedTask = doc.getId();
-                                    TaskModel taskModel = doc.toObject(TaskModel.class);
-                                    Log.d("Firestore", "Total Session Counts: " + taskModel.getSessionCounts());
-                                    sessionCountView.setText("Session Counts For Task: " + taskModel.getSessionCounts());
-                                }
 
-                            }
-
-                        }
-                    });*/
         }
 
     }
 }
-    private void retrieveSessionData(){
+    private void retrieveSessionData(){//retrieve the session data stored in sharedpreferences.
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("PomodoroSessions", Context.MODE_PRIVATE);
         SessionCompleted = sharedPreferences.getInt("Session Counts", 0);
         updateTextView();
@@ -334,18 +299,6 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
 
         RadioGroup radiogrp = audioDialog.findViewById(R.id.audio_radiogrp);
         Button confirmAudioBtn = audioDialog.findViewById(R.id.OKBtn);
-
-       /* radiogrp.setOnCheckedChangeListener((radioGroup, chosenId) ->{
-            if(mediaPlayer != null){
-                mediaPlayer.release(); //stop any previous audio.
-                mediaPlayer=null;
-            }
-            int AudioPreviewId = getAudio(chosenId);
-            if(AudioPreviewId != -1) {
-                mediaPlayer = MediaPlayer.create(getContext(), AudioPreviewId);
-                mediaPlayer.start();
-            }
-        });*/
 
         radiogrp.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -377,31 +330,21 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
                     selectedAudioId = R.raw.waterfall;
                 }else if(chosenId ==R.id.no_audio){
                     mediaPlayer = null;
-                    selectedAudioId = -1;
+                    selectedAudioId = -1; //id is -1 for no audio radio button selection
                 }
             }
         });
 
        confirmAudioBtn.setOnClickListener(item->{
            if(mediaPlayer != null){
-               mediaPlayer.release(); //stop any previous audio.
+               mediaPlayer.release(); //stop any previous audio on pressing ok button
                mediaPlayer=null;
            }
-          // selectedAudioId = getAudio(radiogrp.getCheckedRadioButtonId());
            audioDialog.dismiss();
        });
-
         audioDialog.show();
     }
-/*private int getAudio(int chosenId){
-    if(chosenId == R.id.rain_audio) return R.raw.rain;
-    if(chosenId == R.id.fire_audio) return R.raw.forest_fire;
-    if(chosenId == R.id.night_audio) return R.raw.night_ambience;
-    if(chosenId == R.id.nature_audio) return R.raw.nature_soundscape;
-    if(chosenId == R.id.waterfall_audio) return R.raw.waterfall;
-    if(chosenId == R.id.no_audio) return -1;
-    return -1;
-}*/
+
     private void startAudio(){
         if(selectedAudioId != -1){
             if(mediaPlayer != null){
@@ -426,8 +369,6 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
         return;
         }
         manager.notify(1,builder.build());
-
-
     }
 
     private void NotificationChannel(){
@@ -448,10 +389,8 @@ private void retrieveTaskSessionData() { //retrieve the session data stored in s
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 channel.setDescription(description);
             }
-
             NotificationManager manager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
             manager.createNotificationChannel(channel);
-
         }
     }
 

@@ -29,8 +29,9 @@
                 android:backgroundTint="@color/bg_frame"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="10dp"
-            app:layout_constraintStart_toEndOf="@+id/msgText"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.686"
+                app:layout_constraintStart_toEndOf="@+id/msgText"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -84,7 +85,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="44dp"
-                android:text="Some Useful quote"
+                android:text="WorkWell"
+                android:textStyle="bold"
+                android:textSize="20dp"
                 android:textColor="@color/heading"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -99,11 +102,12 @@
         android:id="@+id/bg_img"
         android:layout_width="wrap_content"
         android:layout_height="260dp"
-        android:src="@drawable/bg_opac"
-
         android:alpha="0.3"
-        app:layout_constraintStart_toStartOf="parent"
+
+        android:src="@drawable/bg_opac"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardView" />
 
     <androidx.cardview.widget.CardView
@@ -133,7 +137,8 @@
                 android:textSize="15dp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="TextSizeCheck" />
 
             <TextView
                 android:id="@+id/TaskCount"
@@ -184,7 +189,8 @@
                 android:textSize="15dp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="TextSizeCheck" />
 
             <TextView
                 android:id="@+id/HabitCount"

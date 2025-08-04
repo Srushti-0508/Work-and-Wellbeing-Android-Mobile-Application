@@ -66,7 +66,6 @@ private FirebaseFirestore firestoredb;
                         @Override
                         public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException error) {
                             if (snapshot!= null) {
-                                //ArrayList<TaskModel>taskList = new ArrayList<>();
                                 CTaskList = new ArrayList<>();
                                 for (DocumentSnapshot doc : snapshot.getDocuments()) {
                                     String id = doc.getId();
@@ -76,12 +75,8 @@ private FirebaseFirestore firestoredb;
                                     CTAdapter = new CompletedTaskAdapter(CompletedTaskFragment.this, CTaskList);
                                     CompletedTaskRC.setAdapter(CTAdapter);
                                     CTAdapter.notifyDataSetChanged();
-                                   // Log.d("Firestore", "Task Name retrieved: " + taskModel.getTask());
-                                }
 
-                               // Log.d("Firestore", "Total Tasks Retrieved: " + taskList.size());
-                                /*Collections.reverse(taskList);*/
-                                /*taskAdapter.updateTaskAdapter(updateList);*/
+                                }
                             }
                         }
 

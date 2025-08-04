@@ -43,17 +43,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
     private Button confirm, cancel;
 
 
-    public TaskAdapter(TaskFragment taskFragment/*Context context*/, ArrayList<TaskModel> taskList) {
+    public TaskAdapter(TaskFragment taskFragment, ArrayList<TaskModel> taskList) {
         this.taskList = taskList;
         this.taskFragment = taskFragment;
-       // this.context = context;
     }
-
-    /*public void updateTaskAdapter(ArrayList<TaskModel> newTaskList){
-        this.taskList.clear();
-        this.taskList.addAll(newTaskList);
-        notifyDataSetChanged();
-    }*/
 
     @NonNull
     @Override
@@ -69,17 +62,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
 
         String loggedUserId = LoggedUser.getUid();
-
         TaskModel task = taskList.get(position);
-
-        String id = task.getId();
+        String id = task.getId(); //getting document ID
         vh.taskText.setText(task.getTask());
-        //Log.d("Adapter", "Binding Task: " + task.getTask());
         vh.categoryText.setText(task.getCategory());
         vh.priorityText.setText(task.getPriority());
         vh.dateText.setText(task.getDate());
         vh.taskText.setChecked(Checked(task.getIsChecked()));
-
 
         vh.taskText.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -90,11 +79,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
                            .collection("LoggedUser Task").document(id).update("isChecked", 1).addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void unused) {
-                                        //TaskModel completedTaskModel = taskList.get(vh.getAdapterPosition());
                                         taskList.remove(p);
                                         notifyItemRemoved(p);
-                                        //notifyItemRangeChanged(vh.getAdapterPosition(), taskList.size());
-                                        Toast.makeText(taskFragment.getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(taskFragment.getContext(), "Task Completed: Check Completed Task List", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                 }else{
@@ -115,17 +102,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
                     public boolean onMenuItemClick(MenuItem menuItem) {
                         if(menuItem.getItemId() == R.id.popup_edit) {
                             taskFragment.AddTask(task);
-                           /* TaskModel ediTask = taskList.get(vh.getAdapterPosition());
-                            if (ediTask == null) {
-                                Log.e("Adapter", "Task object is NULL at position: " + vh.getAdapterPosition());
-                            }*/
-                            // taskFragment.AddTask(taskList.get(vh.getAdapterPosition()));
-                   /* int pos = vh.getAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION) {
-                        taskFragment.AddTask(taskList.get(pos));*/
-                            //taskFragment.AddTask(ediTask);
 
-                        }else if(menuItem.getItemId() == R.id.popup_delete){
+                        } else if(menuItem.getItemId() == R.id.popup_delete){
                             Dialog ConfirmationDialog = new Dialog(taskFragment.getContext());
                             ConfirmationDialog.setContentView(R.layout.confirmation_dialog);
                             ConfirmationDialog.setCancelable(false);
@@ -166,7 +144,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
         taskModel = taskList.get(position);
         String id = taskModel.getId();
         db.collection("Task").document(loggedUserId).
-                collection("LoggedUser Task").document(id).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                collection("LoggedUser Task").document(id)
+                .delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
                         taskList.remove(position);
@@ -174,14 +153,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.viewHolder> {
                         Toast.makeText(taskFragment.getContext(), "Task Deleted Successfully", Toast.LENGTH_SHORT).show();
                     }
                 });
-
-
     }
-    /*public void updateAdapterList(ArrayList<TaskModel> newTaskList){
-        taskList.clear();
-        taskList.addAll(newTaskList);
-        notifyDataSetChanged();
-    }*/
 
     @Override
     public int getItemCount(){

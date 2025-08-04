@@ -17,13 +17,11 @@ public class HabitModel {
     public HabitModel(){ }
 
     public HabitModel(String habit, String reminderTime, String repeatTime, List<String>completionDate, String todayDate){
-        /*this.id= id;*/
         this.habit = habit;
         this.reminderTime = reminderTime;
         this.repeatTime = repeatTime;
         this.completionDate = completionDate;
         this.todayDate = todayDate;
-        //this.isChecked = false;
     }
 
 
@@ -63,14 +61,6 @@ public class HabitModel {
         this.completionDate = completionDate;
     }
 
-    /*public boolean isChecked() {
-        return isChecked;
-    }
-
-    public void setChecked(boolean checked) {
-        isChecked = checked;
-    }*/
-
     @Exclude
     public String getId() {
         return id;
@@ -78,8 +68,5 @@ public class HabitModel {
     public void setHabitId(String habitId) {
         this.id = habitId;
     }
-
-
-
 
 }

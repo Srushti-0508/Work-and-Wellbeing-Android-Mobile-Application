@@ -69,52 +69,54 @@ private PieChart SessionCountPieChart;
         SessionCountPieChart = view.findViewById(R.id.SessionPieChart);
         TaskBarChart = view.findViewById(R.id.TaskBarChart);
     }
-
+    /**
+     * Retrieves task data from Firestore and displays both a bar chart and a pie chart.
+     * The bar chart shows pomodoro session counts for EACH TASK.
+     * The pie chart compares total Pomodoro sessions completed without selecting any specific task vs. those with selected tasks.
+     */
     private void DisplayChartNGraph(){
-
-
-        firestoredb = FirebaseFirestore.getInstance();  //retreving the task names into the drop-down list.
+        firestoredb = FirebaseFirestore.getInstance();  //retrieving the task names.
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
 
-
+        // Retrieve the number of regular (non-task-based) Pomodoro sessions from SharedPreferences
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("PomodoroSessions", Context.MODE_PRIVATE);
         int sessionCounts = sharedPreferences.getInt("Session Counts", 0);
 
         if (LoggedUser != null) {
             String loggedUserId = LoggedUser.getUid();
-
+// Query Firestore for unchecked tasks belonging to the current user
             firestoredb.collection("Task")
-                    .document(loggedUserId).collection("LoggedUser Task")
+                    .document(loggedUserId).collection("LoggedUser Task").whereEqualTo("isChecked",0)
                     .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                         @Override
                         public void onSuccess(QuerySnapshot snapshot) {
                             int index=0;
                             int TotalTaskSessionCounts = 0;
-                            List<String> taskNameList =  new ArrayList<>();
-                            List<BarEntry> barEntryList = new ArrayList<>();
-                        for(QueryDocumentSnapshot documentSnapshot: snapshot){
+                            List<String> taskNameList =  new ArrayList<>(); //to store task names for x-axis of bar chart
+                            List<BarEntry> barEntryList = new ArrayList<>(); // to store the each session counts from each task
+
+                            for(QueryDocumentSnapshot documentSnapshot: snapshot){
                             String id = documentSnapshot.getId();
                             TaskModel taskModel = documentSnapshot.toObject(TaskModel.class);
                             taskModel.setTaskId(id);
+
                             if(taskModel!=null){
+                                // Accumulate session counts for pie chart calculation
                                 TotalTaskSessionCounts += taskModel.getSessionCounts();
+                                // Add each session count as a bar entry with an index for position
                                 barEntryList.add(new BarEntry(index,taskModel.getSessionCounts()));
+                                // Store the task name for labeling the X-axis
                                 taskNameList.add(taskModel.getTask());
                                 index++;
                             }
                         }
-                            DisplayBarChart(taskNameList,barEntryList);
-                            DisplayPieChart(sessionCounts, TotalTaskSessionCounts);
+                            DisplayBarChart(taskNameList,barEntryList);  //session count for each task
+                            DisplayPieChart(sessionCounts, TotalTaskSessionCounts); //Total Pomodoro Session count for both task based and regular session
                         }
 
                     });
         }
 
-
-        //retrieve the session counts and task names from firestore.
-        //session counts from shared preferences.
-        //call the bar chart method.
-        //call the pie chart method.
     }
 
     private void DisplayBarChart(List<String> taskNameList, List<BarEntry> barEntryList){
@@ -154,7 +156,7 @@ private PieChart SessionCountPieChart;
         SessionCountPieChart.getDescription().setEnabled(false);
         SessionCountPieChart.setHoleRadius(40f);
         SessionCountPieChart.setTransparentCircleRadius(50f);
-        SessionCountPieChart.animateY(2000, Easing.EaseInOutCubic);
+        SessionCountPieChart.animateY(2000, Easing.EaseInOutCubic); //animation
 
         SessionCountPieChart.invalidate();
 

@@ -55,10 +55,6 @@ public class HabitFragment extends Fragment {
     private FirebaseAuth Auth;
     private FirebaseUser LoggedUser;
     private String time, currentDate, repeatText;
-   /* private String[] repeat_list = {"Never", "Daily", "Weekly"};
-    private ArrayAdapter<String> adapterRepeatList;
-    private TextInputLayout dropDown;
-    private AutoCompleteTextView dropDown_list;*/
 
     private FloatingActionButton HabitFab;
     private EditText habit_text;
@@ -75,6 +71,15 @@ public class HabitFragment extends Fragment {
     public HabitFragment() {
         // Required empty public constructor
     }
+    /**
+     * Manages user habits in a similar way to the Task, with daily tracking functionality.
+     *
+     *  Allows users to create and edit daily habits using a dialog that supports pre-filled data for editing.
+     * Automatically resets all habit checkboxes to "unchecked" each day.
+     * When a user marks a habit as completed for the day, the completion is logged by date
+     * The HomeFragment displays the total number of completed habits for the current day.
+     * If all habits for the day are completed, it displays a motivational completion message.
+     */
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -114,14 +119,6 @@ public class HabitFragment extends Fragment {
         AddHabitDialog.setCancelable(true);
         habit_text = AddHabitDialog.findViewById(R.id.textInputEditText);
         timePickerTextView = AddHabitDialog.findViewById(R.id.timePickerTextView);
-        /*timePicker.setIs24HourView(true);
-        timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
-            @Override
-            public void onTimeChanged(TimePicker timePicker, int hour, int min) {
-                timeTV.setText(hour + ":" + min);
-                time = String.format("%02d:%02d", hour, min);
-            }
-        });*/
         timePickerTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -142,18 +139,6 @@ public class HabitFragment extends Fragment {
 
         repeatBtnGrp = AddHabitDialog.findViewById(R.id.RepeatBtn);
         saveBtn = AddHabitDialog.findViewById(R.id.saveBtn);
-
-       /* dropDown = AddHabitDialog.findViewById(R.id.dropdown);
-        dropDown_list =AddHabitDialog.findViewById(R.id.autocomplete_view);
-        adapterRepeatList = new ArrayAdapter<String>(getContext(), R.layout.dropdown_category_list, repeat_list);
-
-        dropDown_list.setAdapter(adapterRepeatList);
-        dropDown_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String repeat_list = adapterView.getItemAtPosition(i).toString();
-            }
-        });*/
 
         if(editHabit!=null){
             habit_text.setText(editHabit.getHabit());
@@ -181,23 +166,6 @@ public class HabitFragment extends Fragment {
                 repeatBtnGrp.clearChecked();
             }
             saveBtn.setText("Update Habit");
-            //dropDown_list.setText(editHabit.getRepeatTime());
-            /*String reminderTime = editHabit.getReminderTime();
-            if(reminderTime!=null && !reminderTime.isEmpty()){
-                String[] parts = reminderTime.split(":");
-                if(parts.length == 2){
-                    int hour = Integer.parseInt(parts[0]);
-                    int minute = Integer.parseInt(parts[1]);
-                    timePicker.setHour(hour);
-                    timePicker.setMinute(minute);
-                    time = reminderTime;
-                }
-
-            }*/
-
-
-
-
         }
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -216,10 +184,8 @@ public class HabitFragment extends Fragment {
                     repeatText = "Weekly";
                 }
 
-
                 currentDate = new SimpleDateFormat("dd/MM/yyyy",Locale.getDefault()).format(new Date());
                 List<String> completionDate = new ArrayList<>();
-                //completionDate.add(currentDate);
 
                 if(habitText.isEmpty()){
                     Toast.makeText(getContext(), "Habit name is required", Toast.LENGTH_SHORT).show();
@@ -228,12 +194,14 @@ public class HabitFragment extends Fragment {
                     if(editHabit == null){
                         HabitModel habitModel = new HabitModel(habitText, reminderTime, repeatText, completionDate, currentDate);
                         SaveHabit(habitModel);
+                        AddHabitDialog.dismiss();
                     }else{
                         editHabit.setHabit(habitText);
                         editHabit.setReminderTime(reminderTime);
                         editHabit.setRepeatTime(repeatText);
                         Log.d("EditHabit", "Editing Habit with ID: " + editHabit.getId());
                         EditHabit(editHabit.getId(), editHabit);
+                        AddHabitDialog.dismiss();
                     }
 
                 }
@@ -242,18 +210,8 @@ public class HabitFragment extends Fragment {
         AddHabitDialog.show();
     }
 
-
     private void SaveHabit(HabitModel saveHabit) {
         firestoredb = FirebaseFirestore.getInstance();
-
-       /* Map<String, Object> Habit = new HashMap<>();
-        Habit.put("habit", saveHabit.getHabit());
-        Habit.put("time", saveHabit.getReminderTime());
-        Habit.put("repeat", saveHabit.getRepeatTime());
-        Habit.put("completionDate", new ArrayList<>());
-        Habit.put("currentDate",saveHabit.getCurrrentDate());
-*/
-
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
         if (LoggedUser != null) {
             String loggedUserId = LoggedUser.getUid();
@@ -283,10 +241,6 @@ public class HabitFragment extends Fragment {
     private void EditHabit(String id, HabitModel updateHabit) {
 
         firestoredb = FirebaseFirestore.getInstance();
-        /*Map<String, Object> habitUpdate = new HashMap<>();
-        habitUpdate.put("habit", updateHabit.getHabit());
-        habitUpdate.put("time", updateHabit.getReminderTime());
-        habitUpdate.put("repeat", updateHabit.getRepeatTime());*/
         LoggedUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (LoggedUser != null) {
@@ -330,28 +284,25 @@ public class HabitFragment extends Fragment {
                                     totalHabit++;
                                     String id = document.getId();
                                     HabitModel habit = document.toObject(HabitModel.class);
-                                    //Log.d("Firestore", "Habit Retrieved: " + habit.getHabit() + " | "
-                                         //   + habit.getRepeatTime() + " | " + habit.getReminderTime()+ " | "+habit.getCurrrentDate());
                                     habit.setHabitId(id);
-                                    List<String>checkCompletedDate = habit.getCompletionDate();
+                                    List<String>checkCompletedDate = habit.getCompletionDate(); //storing completion date in new list
                                     if(checkCompletedDate !=null && checkCompletedDate.contains(currentDate)){
-                                        //habit.setChecked(true);
                                         isCheckedCount++;
                                     }
+
                                     habitList.add(habit);
                                     habitAdapter = new HabitAdapter(HabitFragment.this, habitList);
                                     HabitRecyclerView.setAdapter(habitAdapter);
                                     habitAdapter.notifyDataSetChanged();
-                                    //Log.d("Firestore", "Habit Name retrieved: " + habit.getHabit());
+
                                 }
-                                if(isCheckedCount == totalHabit){
+                                if(isCheckedCount == totalHabit && totalHabit > 0){  //display success message on completion of all habits.
+                                    //also set the visibility as gone if no habit is created yet.
                                     successMsg.setVisibility(View.VISIBLE);
-                                    //HabitRecyclerView.setVisibility(View.GONE);
                                 }else{
                                     successMsg.setVisibility(View.GONE);
-                                    HabitRecyclerView.setVisibility(View.VISIBLE);
                                 }
-                                //Log.d("Firestore","Total Habit Retrieved: "+habitList.size());
+
                             }
                         }
                     });
