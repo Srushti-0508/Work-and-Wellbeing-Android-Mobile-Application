@@ -4,7 +4,7 @@ Work and Wellbeing a mobile productivity app built in **Java using Android Studi
 
 ---
 
-##✨ Key Features
+## ✨ Key Features
 
 - 🔐 **User Authentication**
   - Sign up, login, and logout using Firebase Email & Password authentication
